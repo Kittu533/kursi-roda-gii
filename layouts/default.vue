@@ -15,6 +15,7 @@
         <!-- Header -->
         <Header 
           @toggle-sidebar="toggleSidebar" 
+          @logout="handleLogout"
           :user="user" 
         />
 
@@ -29,8 +30,16 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from 'vue-router';
+import { useAuth } from '../composables/use-auth';
+import Header from '../components/header.vue';
+import Sidebar from '../components/sidebar.vue';
+
+const router = useRouter();
+const { signOut, user: authUser } = useAuth();
+const { initAuth } = useAuth()
 
 // Initialize with a default value for SSR
 const isSidebarOpen = ref(true);
@@ -42,37 +51,49 @@ const user = ref({
   avatar: "/avatar.webp",
 });
 
+const updateSidebarState = () => {
+  // Always show sidebar on tablet and larger (768px+)
+  // Only auto-close on mobile
+  isSidebarOpen.value = window.innerWidth < 768 ? false : true;
+};
+
 // Update sidebar state based on screen size after component is mounted
 onMounted(() => {
+  // Initialize authentication state
+  initAuth()
+
   // Set initial state based on screen size
   updateSidebarState();
-  
+
   // Add event listener to handle resize
   const handleResize = () => {
     updateSidebarState();
   };
-  
-  function updateSidebarState() {
-    // Always show sidebar on tablet and larger (768px+)
-    // Only auto-close on mobile
-    if (window.innerWidth < 768) {
-      isSidebarOpen.value = false;
-    } else {
-      isSidebarOpen.value = true;
-    }
-  }
-  
+
   // Add resize listener with debounce
   let resizeTimer;
-  window.addEventListener('resize', () => {
+  const debouncedHandleResize = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(handleResize, 100);
+  };
+
+  window.addEventListener('resize', debouncedHandleResize);
+
+  // Clean up the event listener on unmount
+  onUnmounted(() => {
+    window.removeEventListener('resize', debouncedHandleResize);
   });
 });
 
 // Toggle sidebar function
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+// Handle logout
+const handleLogout = () => {
+  signOut();
+  // The signOut function in useAuth will handle redirecting to the login page
 };
 </script>
 
