@@ -8,7 +8,7 @@
 import LoginForm from "@/components/auth/login-form.vue";
 definePageMeta({
   title: "Login",
-  layout: "users/auth",
+  layout: "user/auth",
   meta: {
     auth: false,
   },

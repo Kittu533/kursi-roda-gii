@@ -15,8 +15,8 @@ export interface Product {
   export interface ProductFilter {
     status?: string
     date?: string
-    page: number
-    itemsPerPage: number
+    page?: number
+    itemsPerPage?: number
   }
   
   export interface ProductPagination {

@@ -20,28 +20,16 @@
       </button>
       <div class="flex-1 flex items-center">
         <div
-          class="bg-orange-100 rounded-full p-2 mr-3 inline-flex items-center justify-center"
+          class="bg-white border border-[#FF9732] rounded-full h-[36px] w-[36px] flex items-center justify-center mr-3"
         >
-          <!-- Location marker icon -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-orange-500"
-          >
-            <path
-              d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"
-            />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
+          <NuxtIcon name="mdi:map-marker" class="text-gray-500 h-5 w-5" />
         </div>
-        <span class="text-sm font-medium">{{ selectedLocation.name }}</span>
+        <div>
+          <p class="text-[14px] font-[400px]">{{ selectedLocation.name }}</p>
+          <p class="text-[12px] font-[400px] text-[#FF5F00]">
+            {{ selectedLocation.address }}
+          </p>
+        </div>
       </div>
     </div>
 
@@ -52,21 +40,11 @@
           class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
         >
           <!-- Search icon -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-gray-400"
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
           >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+            <NuxtIcon name="ic:twotone-search" class="text-gray-500 h-5 w-5" />
+          </div>
         </div>
         <input
           v-model="searchQuery"
@@ -99,7 +77,9 @@
                 style="width: 20px; height: 20px"
               />
             </div>
-            <div class="text-xs text-center mr-3 text-gray-400">{{ location.distance }} km</div>
+            <div class="text-xs text-center mr-3 text-gray-400">
+              {{ location.distance }} km
+            </div>
           </div>
           <div class="flex-1">
             <h3 class="font-medium text-sm">{{ location.name }}</h3>
@@ -180,8 +160,19 @@ const filteredLocations = computed(() => {
 const selectLocation = (location) => {
   console.log("Selected location:", location);
   selectedLocation.value = location;
-  // You can navigate to a different page or update the UI as needed
-  router.push("/");
+
+  // Best practice routing dengan route name dan params
+  router.push({
+    name: "user-date-selection", // Menggunakan named route
+    params: {
+      // Jika perlu menyimpan di path params
+    },
+    query: {
+      locationId: location.id,
+      locationName: encodeURIComponent(location.name),
+      from: "search", // Untuk tracking sumber navigasi
+    },
+  });
 };
 
 const router = useRouter();
