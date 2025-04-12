@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 import { ref, computed } from "vue"
 import type { Product, ProductFilter } from "~/types/product"
 import { useProducts } from "~/composables/product/use-product"
+import { useProductApi } from '@/composables/consume-api/product.api'
 import { useNotification } from "~/composables/use-notification"
 
 export const useProductStore = defineStore("product", () => {
@@ -128,5 +129,93 @@ export const useProductStore = defineStore("product", () => {
     updateProduct,
     createProduct,
     deleteProduct,
+  }
+})
+
+interface ProductWithQuantity extends Product {
+  quantity: number;
+  guideSelected: boolean;
+  pricePerDay: number;
+}
+
+export const useProductsStore = defineStore('products', {
+  state: () => ({
+    products: [] as ProductWithQuantity[],
+    selectedDates: {
+      startDate: '10 Februari 2025',
+      endDate: '21 Februari 2025'
+    },
+    isLoading: false,
+    error: null as string | null
+  }),
+  
+  actions: {
+    async fetchProducts(filter?: ProductFilter) {
+      this.isLoading = true
+      this.error = null
+      const productApi = useProductApi() // Move the hook call outside the try block
+
+      try {
+        const { data } = await productApi.getProducts(filter)
+        
+        // Transform API data to include quantity and guide selection
+        this.products = data.map(product => ({
+          ...product,
+          quantity: 0,
+          guideSelected: false,
+          pricePerDay: 130000 // Fixed price for all products in the example
+        }))
+      } catch (err) {
+        this.error = 'Failed to fetch products'
+        console.error(err)
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
+    incrementQuantity(productId: string) {
+      const product = this.products.find(p => p.id === productId)
+      if (product) {
+        product.quantity++
+      }
+    },
+    
+    decrementQuantity(productId: string) {
+      const product = this.products.find(p => p.id === productId)
+      if (product && product.quantity > 0) {
+        product.quantity--
+      }
+    },
+    
+    toggleGuide(productId: string) {
+      const product = this.products.find(p => p.id === productId)
+      if (product) {
+        product.guideSelected = !product.guideSelected
+      }
+    },
+    
+    setDates(startDate: string, endDate: string) {
+      this.selectedDates.startDate = startDate
+      this.selectedDates.endDate = endDate
+    },
+    
+    resetSelection() {
+      this.products.forEach(product => {
+        product.quantity = 0
+        product.guideSelected = false
+      })
+    }
+  },
+  
+  getters: {
+    selectedProducts: (state) => state.products.filter(p => p.quantity > 0),
+    
+    totalAmount: (state) => {
+      return state.products.reduce((total, product) => {
+        return total + (product.quantity * product.pricePerDay)
+      }, 0)
+    },
+    
+    availableProducts: (state) => state.products.filter(p => p.status === 'tersedia')
   }
 })
