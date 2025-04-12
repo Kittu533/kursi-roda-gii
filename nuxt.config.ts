@@ -4,7 +4,8 @@ export default defineNuxtConfig({
   modules: [
     '@pinia/nuxt',
     '@nuxtjs/tailwindcss',
-    '@nuxt/eslint', '@nuxt/icon',
+    '@nuxt/eslint',
+    '@nuxt/icon',
     '@nuxt/image',
     '@nuxtjs/seo',
     'shadcn-nuxt',
@@ -30,5 +31,8 @@ export default defineNuxtConfig({
   shadcn: {
     prefix: '',
     componentDir: './components/ui'
+  },
+  icon: {
+    componentName: 'NuxtIcon'
   }
 })

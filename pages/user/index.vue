@@ -2,13 +2,13 @@
     <div class="pb-20">
       <!-- User Profile Section -->
       <div class="p-4 flex items-center">
-        <div class="bg-orange-100 rounded-full p-2 mr-3">
-          <Icon name="lucide:map-pin" class="text-orange-500 h-5 w-5" />
+        <div class="bg-white border border-[#FF9732] rounded-full h-[36px] w-[36px] flex items-center justify-center mr-3">
+          <NuxtIcon name="mdi:map-marker" class="text-gray-500 h-5 w-5" />
         </div>
         <div class="flex-1">
           <h3 class="text-xs text-gray-500">Alamat</h3>
           <p class="text-sm font-medium line-clamp-1">{{ currentLocation.address }}</p>
-        </div>
+        </div>  
       </div>
       
       <!-- User Greeting -->
@@ -27,7 +27,8 @@
       
       <!-- Voucher Section -->
       <div class="px-4 py-2">
-        <VoucherCard :voucher="voucher" />
+        <!-- <VoucherCard :voucher="voucher" /> -->
+         <img src="/public/package-1.webp" alt="">
       </div>
       
       <!-- Packages Section -->
@@ -58,13 +59,18 @@
       </div>
       
       <!-- Bottom Navigation -->
-      <BottomNavigation />
+      <BottomNavigation /> 
     </div>
   </template>
+  
   
   <script setup lang="ts">
   import { ref } from 'vue';
   import type { User, Location, Agent, Package, Voucher } from '~/types';
+  import SearchBar from '~/components/user/search-bar.vue';
+  import PackageCard from '~/components/user/package-card.vue';
+  import AgentCard from '~/components/user/agent-card.vue';
+  import BottomNavigation from '~/components/user/bottom-navigation.vue';
   definePageMeta({
     title: 'User Home',
     layout: 'users',
@@ -73,7 +79,7 @@
   const user = ref<User>({
     id: '1',
     name: 'Cahya',
-    avatarUrl: '/placeholder.svg?height=100&width=100',
+    avatarUrl: '/avatar.webp',
     status: 'Selamat kali nada sesuai kebutuhanmu!'
   });
   
@@ -90,7 +96,7 @@
     title: 'VOUCHER DISKON',
     description: 'POTONGAN HARGA UNTUK PENYEWAAN KURSI RODA HARIAN',
     discountPercentage: 50,
-    imageUrl: '/placeholder.svg?height=200&width=400',
+    imageUrl: '/package-1.webp',
     validUntil: new Date('2023-12-31')
   });
   
@@ -101,7 +107,7 @@
       timeRange: 'Waktu: 20.00 - 21.00',
       originalPrice: 300000,
       discountedPrice: 150000,
-      imageUrl: '/placeholder.svg?height=100&width=100'
+      imageUrl: '/voucher-1.webp'
     },
     {
       id: '2',
@@ -109,7 +115,7 @@
       timeRange: 'Waktu: 20.00 - 21.00',
       originalPrice: 300000,
       discountedPrice: 150000,
-      imageUrl: '/placeholder.svg?height=100&width=100'
+      imageUrl: '/voucher-1.webp'
     }
   ]);
   

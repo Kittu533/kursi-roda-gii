@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 font-poppins">
     <div class="max-w-md mx-auto bg-white min-h-screen relative">
       <!-- Status Bar -->
       <div
@@ -14,7 +14,9 @@
 
       <!-- Main Content -->
       <slot />
+      
     </div>
+   
   </div>
 </template>
 
@@ -43,3 +45,11 @@ onBeforeUnmount(() => {
   }
 });
 </script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+</style>

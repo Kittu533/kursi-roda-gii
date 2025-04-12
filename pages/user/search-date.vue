@@ -3,13 +3,13 @@
     <!-- Header -->
     <div class="p-4 flex items-center">
       <button @click="$router.back()" class="mr-3">
-        <Icon name="lucide:chevron-left" class="h-5 w-5" />
+        <Icon name="mdi:chevron-left" class="h-5 w-5" />
       </button>
       <div class="flex-1">
         <div
           class="bg-orange-100 rounded-full p-2 mr-3 inline-flex items-center"
         >
-          <Icon name="lucide:map-pin" class="text-orange-500 h-5 w-5" />
+          <Icon name="mdi:map-marker" class="text-orange-500 h-5 w-5" />
         </div>
         <span class="text-sm font-medium">{{ selectedLocation.name }}</span>
       </div>
@@ -35,7 +35,7 @@
               }}
             </p>
           </div>
-          <Icon name="lucide:calendar" class="h-5 w-5 text-gray-400" />
+          <Icon name="mdi:calendar" class="h-5 w-5 text-gray-400" />
         </div>
 
         <div class="flex items-center border border-gray-200 rounded-md p-3">
@@ -49,7 +49,7 @@
               }}
             </p>
           </div>
-          <Icon name="lucide:calendar" class="h-5 w-5 text-gray-400" />
+          <Icon name="mdi:calendar" class="h-5 w-5 text-gray-400" />
         </div>
       </div>
 
@@ -78,9 +78,9 @@ import type { Location, DateRange } from "~/types";
 
 const router = useRouter();
 definePageMeta({
-    title: 'User Home',
-    layout: 'users',
-  });
+  title: "User Home",
+  layout: "users",
+});
 const selectedLocation = ref<Location>({
   id: "1",
   name: "Agen A",

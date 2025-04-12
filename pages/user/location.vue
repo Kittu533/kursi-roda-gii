@@ -3,7 +3,7 @@
       <!-- Header -->
       <div class="p-4 flex items-center">
         <button @click="goBack" class="mr-3">
-          <Icon name="lucide:chevron-left" class="h-5 w-5" />
+          <Icon name="mdi:chevron-left" class="h-5 w-5" />
         </button>
         <h1 class="text-lg font-medium">Lokasi</h1>
       </div>
@@ -23,7 +23,7 @@
         <!-- Map Instructions -->
         <div class="absolute top-4 left-4 right-4 bg-white p-3 rounded-md shadow-md">
           <div class="flex items-start">
-            <Icon name="lucide:info" class="h-5 w-5 text-orange-500 mr-2 mt-0.5" />
+            <Icon name="mdi:information-outline" class="h-5 w-5 text-orange-500 mr-2 mt-0.5" />
             <p class="text-xs text-gray-600">
               Mohon pastikan titik anda sesuai dengan lokasi anda saat ini untuk memudahkan kurir anda
             </p>
@@ -44,7 +44,7 @@
           >
             <div class="flex items-start">
               <div class="bg-orange-100 rounded-full p-2 mr-3 mt-1">
-                <Icon name="lucide:map-pin" class="text-orange-500 h-5 w-5" />
+                <Icon name="mdi:map-marker" class="text-orange-500 h-5 w-5" />
               </div>
               <div class="flex-1">
                 <h3 class="font-medium text-sm">{{ location.name }}</h3>
@@ -63,7 +63,7 @@
             @click="addNewLocation"
             class="w-full flex items-center justify-center py-3 border border-gray-300 rounded-md text-sm"
           >
-            <Icon name="lucide:plus" class="h-4 w-4 mr-2" />
+            <Icon name="mdi:plus" class="h-4 w-4 mr-2" />
             Tambahkan Titik Alamat Baru
           </button>
         </div>
