@@ -52,4 +52,7 @@ onBeforeUnmount(() => {
 .font-poppins {
   font-family: 'Poppins', sans-serif;
 }
+
+
 </style>
+
