@@ -176,6 +176,6 @@
   
   const goToHome = () => {
     showSuccessModal.value = false
-    router.push('/')
+    router.push('/user')
   }
   </script>

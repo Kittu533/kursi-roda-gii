@@ -12,6 +12,10 @@
 // onMounted(() => {
 //   router.push('/auth/login')
 // })
+definePageMeta({
+    title: 'User Home',
+    layout: 'users',
+  });
 </script>
 
 <style scoped>
