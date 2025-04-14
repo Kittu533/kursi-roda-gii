@@ -41,8 +41,8 @@
               class="px-4 py-3 text-sm"
             >
               <!-- Special handling for action column -->
-              <template v-if="column.key === 'actions'">
-                <div class="flex space-x-2">
+              <template   v-if="column.key === 'actions'">
+                <div class="flex space-x-2 z-10">
                   <button
                     @click="emitAction('view', row)"
                     class="p-1 text-blue-600 hover:text-blue-800"
@@ -138,73 +138,67 @@
 
 <script setup lang="ts">
 import { defineProps, defineEmits } from "vue";
-
 // Define types
 interface TableColumn {
-  key: string;
-  label: string;
-  render?: (value: unknown, row?: Record<string, unknown>) => RenderResult;
+  key: string
+  label: string
+  render?: (value: unknown, row?: Record<string, unknown>) => RenderResult
 }
 
 type RenderResult =
   | string
   | {
-      component?: string;
-      text?: string;
-      slots?: Record<string, string>;
-      class?: string;
-      [key: string]: unknown;
-    };
+      component?: string
+      text?: string
+      slots?: Record<string, string>
+      class?: string
+      [key: string]: unknown
+    }
 
 // Props with proper types
 const props = defineProps<{
-  data: Record<string, unknown>[];
-  columns: TableColumn[];
-  loading?: boolean;
-}>();
+  data: Record<string, unknown>[]
+  columns: TableColumn[]
+  loading?: boolean
+}>()
 
 // Emits with proper types
 const emit = defineEmits<{
-  (e: "action", action: { type: string; row: Record<string, unknown> }): void;
-}>();
+  (e: "action", action: { type: string; row: Record<string, unknown> }): void
+}>()
 
 // Helper method to emit actions
 const emitAction = (type: string, row: Record<string, unknown>): void => {
-  emit("action", { type, row });
-};
+  emit("action", { type, row })
+}
 
 // Methods for rendering custom cells with proper types
 const getRenderComponent = (renderResult: RenderResult): string => {
   if (typeof renderResult === "object" && renderResult !== null) {
-    return renderResult.component || "span";
+    return renderResult.component || "span"
   }
-  return "span";
-};
+  return "span"
+}
 
-const getRenderProps = (
-  renderResult: RenderResult
-): Record<string, unknown> => {
-  if (
-    typeof renderResult === "string" ||
-    renderResult === null ||
-    renderResult === undefined
-  ) {
-    return {};
+const getRenderProps = (renderResult: RenderResult): Record<string, unknown> => {
+  if (typeof renderResult === "string" || renderResult === null || renderResult === undefined) {
+    return {}
   }
 
-  const { component, text, slots, ...restProps } = renderResult;
-  return restProps;
-};
+  const { component, text, slots, ...restProps } = renderResult
+  return restProps
+}
 
 const getRenderText = (renderResult: RenderResult): string => {
   if (typeof renderResult === "string") {
-    return renderResult;
+    return renderResult
   }
   if (renderResult === null || renderResult === undefined) {
-    return "";
+    return ""
   }
 
-  return renderResult.text || "";
-};
+  return renderResult.text || ""
+}
+
 </script>
 

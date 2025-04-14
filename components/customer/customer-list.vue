@@ -88,7 +88,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useCustomerStore } from "~/store/customer";
 import { useNotification } from "~/composables/use-notification";
-import type { Customer, CustomerAction, Column } from "~/types/customer";
+import type {  CustomerAction, Column } from "~/types/customer";
 import CustomerFilter from "~/components/customer/customer-filter.vue";
 import UiTable from "~/components/ui/ui-table.vue";
 import UiPagination from "~/components/ui/ui-pagination.vue";
