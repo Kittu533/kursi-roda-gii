@@ -34,5 +34,8 @@ export default defineNuxtConfig({
   },
   icon: {
     componentName: 'NuxtIcon'
+  },
+  build: {
+    transpile: ['pdf-lib'] // Add problematic packages here
   }
 })

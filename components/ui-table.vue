@@ -31,22 +31,7 @@
         </div>
       </div>
 
-      <!-- Per Page Selector -->
-      <!-- <div class="flex items-center gap-2">
-        <span class="text-sm text-muted-foreground">Rows per page:</span>
-        <select
-          v-model="pagination.pageSize"
-          class="border rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option
-            v-for="option in [10, 25, 50, 100]"
-            :key="option"
-            :value="option"
-          >
-            {{ option }}
-          </option>
-        </select>
-      </div> -->
+     
     </div>
 
     <!-- Loading state -->
@@ -311,7 +296,6 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   createColumnHelper,
-  type ColumnDef,
   type SortingState,
   type PaginationState,
 } from "@tanstack/vue-table";

@@ -5,47 +5,36 @@
         <h2 class="text-2xl font-bold tracking-tight">Pelanggan</h2>
       </div>
       
-        <div class="flex items-center gap-2">
-          <button
-            class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
+      <div class="flex items-center gap-2">
+        <!-- Komponen ExportDropdown -->
+        <ExportDropdown
+          :data="exportData"
+          :columns="exportColumns"
+          title="Data Pelanggan"
+          filename="pelanggan"
+        />
+        
+        <button
+          class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
+          @click="showFilter = !showFilter"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-filter"
           >
-            <span>Cetak</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-chevron-down"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          <button
-            class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
-            @click="showFilter = !showFilter"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-filter"
-            >
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-            <span>Filter</span>
-          </button>
-        </div>
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          <span>Filter</span>
+        </button>
+      </div>
     </div>
 
     <!-- Filter Panel -->
@@ -65,7 +54,7 @@
       <div class="p-4">
         <UiTable
           :data="customers"
-          :columns="columns"
+          :columns="tableColumns"
           :loading="isLoading"
           @action="handleAction"
         />
@@ -83,21 +72,18 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+<script setup>
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useCustomerStore } from "~/store/customer";
-import { useNotification } from "~/composables/use-notification";
-import type {  CustomerAction, Column } from "~/types/customer";
 import CustomerFilter from "~/components/customer/customer-filter.vue";
 import UiTable from "~/components/ui-table.vue";
 import UiPagination from "~/components/ui-pagination.vue";
+import ExportDropdown from "~/components/export-to.vue";
 
 // Router and stores
 const router = useRouter();
 const customerStore = useCustomerStore();
-const notification = useNotification();
-
 // State
 const showFilter = ref(false);
 
@@ -107,79 +93,50 @@ const pagination = computed(() => customerStore.pagination);
 const filter = computed(() => customerStore.filter);
 const isLoading = computed(() => customerStore.isLoading);
 
-// Table columns configuration
-const columns: Column[] = [
-  { key: "id", label: "ID Pelanggan" },
-  { key: "name", label: "Nama Lengkap" },
-  { key: "phone", label: "Nomor Telepon" },
-  { key: "email", label: "Alamat Email" },
-  { key: "gender", label: "Jenis Kelamin" },
-  { key: "registerDate", label: "Akun Dibuat" },
-  { key: "lastLogin", label: "Akun Diperbarui" },
-  {
-    key: "status",
-    label: "Status Akun",
-    render: (value: string) => {
-      const statusClasses: Record<string, string> = {
-        menunggu: "bg-yellow-100 text-yellow-800",
-        aktif: "bg-green-100 text-green-800",
-        dibatalkan: "bg-red-100 text-red-800",
-        nonaktif: "bg-gray-100 text-gray-800",
-      };
-      return {
-        component: "span",
-        class: `px-2 py-1 rounded-md text-xs font-medium ${
-          statusClasses[value] || ""
-        }`,
-        text: value.charAt(0).toUpperCase() + value.slice(1),
-      };
-    },
-  },
-  {
-    key: "actions",
-    label: "Aksi",
-    render: (_, row) => {
-      return {
-        component: "div",
-        class: "flex space-x-2",
-        slots: {
-          default: `
-            <button 
-              @click="$emit('action', { type: 'view', row: ${JSON.stringify(
-                row
-              )} })"
-              class="p-1 text-blue-600 hover:text-blue-800"
-            >
-              <span class="sr-only">View</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-            <button 
-              @click="$emit('action', { type: 'edit', row: ${JSON.stringify(
-                row
-              )} })"
-              class="p-1 text-yellow-600 hover:text-yellow-800"
-            >
-              <span class="sr-only">Edit</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-            </button>
-            <button 
-              @click="$emit('action', { type: 'delete', row: ${JSON.stringify(
-                row
-              )} })"
-              class="p-1 text-red-600 hover:text-red-800"
-            >
-              <span class="sr-only">Delete</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-            </button>
-          `,
-        },
-      };
-    },
-  },
+// Table columns configuration for TanStack Table
+const tableColumns = [
+  { key: "id", label: "ID Pelanggan", sortable: true },
+  { key: "name", label: "Nama Lengkap", sortable: true },
+  { key: "phone", label: "Nomor Telepon", sortable: true },
+  { key: "email", label: "Alamat Email", sortable: true },
+  { key: "gender", label: "Jenis Kelamin", sortable: true },
+  { key: "registerDate", label: "Akun Dibuat", sortable: true, format: "date" },
+  { key: "lastLogin", label: "Akun Diperbarui", sortable: true, format: "date" },
+  { key: "status", label: "Status Akun", sortable: true },
+  { key: "actions", label: "Aksi" }
 ];
 
+// Kolom untuk export (tanpa kolom aksi)
+const exportColumns = computed(() => {
+  return [
+    { key: "id", header: "ID Pelanggan" },
+    { key: "name", header: "Nama Lengkap" },
+    { key: "phone", header: "Nomor Telepon" },
+    { key: "email", header: "Alamat Email" },
+    { key: "gender", header: "Jenis Kelamin" },
+    { key: "registerDate", header: "Akun Dibuat" },
+    { key: "lastLogin", header: "Akun Diperbarui" },
+    { key: "status", header: "Status Akun" }
+  ];
+});
+
+// Data untuk export (format data untuk export)
+const exportData = computed(() => {
+  return customers.value.map(customer => {
+    // Buat salinan data customer untuk export
+    const exportCustomer = { ...customer };
+    
+    // Format status jika diperlukan
+    if (exportCustomer.status) {
+      exportCustomer.status = exportCustomer.status.charAt(0).toUpperCase() + exportCustomer.status.slice(1);
+    }
+    
+    return exportCustomer;
+  });
+});
+
 // Methods
-const applyFilter = (newFilter: Partial<CustomerFilter>) => {
+const applyFilter = (newFilter) => {
   customerStore.setFilter(newFilter);
 };
 
@@ -188,24 +145,26 @@ const resetFilter = () => {
   showFilter.value = false;
 };
 
-const handlePageChange = (page: number) => {
-  customerStore.setFilter({ page });
+const handlePageChange = (page) => {
+  customerStore.setFilter({ ...filter.value, page });
 };
 
-const handleAction = async ({ type, row }: CustomerAction) => {
+// Handler untuk action dari TanStack Table
+const handleAction = (action) => {
+  const { type, row } = action;
   const customer = row;
 
   switch (type) {
     case "view":
-      await router.push(`/admin/pengguna/pelanggan/${customer.id}`);
+      router.push(`/admin/pengguna/pelanggan/${customer.id}`);
       break;
     case "edit":
-      await router.push(`/admin/pengguna/pelanggan/${customer.id}/edit`);
+      router.push(`/admin/pengguna/pelanggan/${customer.id}/edit`);
       break;
     case "delete":
       if (confirm(`Apakah anda yakin ingin menghapus ${customer.name}?`)) {
         try {
-          await customerStore.deleteCustomer(customer.id);
+          customerStore.deleteCustomer(customer.id);
         } catch (error) {
           console.error("Error deleting customer:", error);
         }
