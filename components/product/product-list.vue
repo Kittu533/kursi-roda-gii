@@ -89,8 +89,8 @@ import { useProductStore } from "~/store/product";
 import { useNotification } from "~/composables/use-notification";
 import type { Product } from "~/types/product";
 import ProductFilter from "~/components/product/product-filter.vue";
-import UiTable from "~/components/ui/ui-table.vue";
-import UiPagination from "~/components/ui/ui-pagination.vue";
+import UiTable from "~/components/ui-table.vue";
+import UiPagination from "~/components/ui-pagination.vue";
 
 // Router and stores
 const router = useRouter();

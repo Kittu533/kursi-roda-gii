@@ -128,8 +128,8 @@ import { useAgentStore } from "~/store/agent";
 import { useNotification } from "~/composables/use-notification";
 import type { Agent } from "~/types/agent";
 import AgentFilter from "~/components/agent/agent-filter.vue";
-import UiTable from "~/components/ui/ui-table.vue";
-import UiPagination from "~/components/ui/ui-pagination.vue";
+import UiTable from "~/components/ui-table.vue";
+import UiPagination from "~/components/ui-pagination.vue";
 import ConfirmationModal from "~/components/ui/modals/confirmation-modal.vue";
 
 // Router and stores

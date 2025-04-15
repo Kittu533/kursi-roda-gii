@@ -90,8 +90,8 @@ import { useCustomerStore } from "~/store/customer";
 import { useNotification } from "~/composables/use-notification";
 import type {  CustomerAction, Column } from "~/types/customer";
 import CustomerFilter from "~/components/customer/customer-filter.vue";
-import UiTable from "~/components/ui/ui-table.vue";
-import UiPagination from "~/components/ui/ui-pagination.vue";
+import UiTable from "~/components/ui-table.vue";
+import UiPagination from "~/components/ui-pagination.vue";
 
 // Router and stores
 const router = useRouter();

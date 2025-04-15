@@ -149,7 +149,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useReturnStore } from "~/store/return";
 import ReturnFilter from "~/components/return/return-filter.vue";
-import UITable from "~/components/ui/ui-table.vue";
+import UITable from "~/components/ui-table.vue";
 
 // Router and stores
 const router = useRouter();
