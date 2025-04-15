@@ -83,7 +83,7 @@
                     header.column.getCanSort(),
                 },
                 header.id === 'actions'
-                  ? 'sticky right-0 z-10 bg-muted/30 shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)]'
+                  ? 'sticky right-0 z-10 hover:bg-muted bg-muted shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)]'
                   : '',
               ]"
               @click="
@@ -158,12 +158,12 @@
               class="px-4 py-3 text-sm"
               :class="[
                 cell.column.id === 'actions'
-                  ? 'sticky right-0 z-10 bg-white shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)] hover:bg-muted/30'
+                  ? 'sticky right-0  z-10 bg-white hover:bg-white shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)] hover:bg-muted/30'
                   : '',
               ]"
             >
               <!-- Special handling for action column -->
-              <template v-if="cell.column.id === 'actions'">
+              <template  v-if="cell.column.id === 'actions'">
                 <div class="flex space-x-2 z-10">
                   <button
                     @click="emitAction('view', row.original)"

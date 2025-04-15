@@ -37,8 +37,8 @@ export interface AgentAction {
 }
 
 export interface Column {
-    key: string
-    label: string
-    render?: (value: any, row?: any) => any
+  key: string
+  label: string
+  render?: (value: any, row?: any) => any
 }
 

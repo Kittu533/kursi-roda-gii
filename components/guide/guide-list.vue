@@ -5,25 +5,12 @@
         <h2 class="text-2xl font-bold tracking-tight">Guide</h2>
       </div>
       <div class="flex items-center gap-2">
-        <button
-          class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
-        >
-          <span>Cetak</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-chevron-down"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </button>
+        <ExportDropdown
+          :data="exportData"
+          :columns="exportColumns"
+          title="Data Guide"
+          filename="Guide"
+        />
         <button
           class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
@@ -56,15 +43,16 @@
       @close="showFilter = false"
     />
 
-    <!-- Data Table -->
-    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+
+     <!-- Data Table -->
+     <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
       <div class="p-4 border-b">
         <h3 class="text-lg font-medium">Data Guide</h3>
       </div>
       <div class="p-4">
         <UiTable
           :data="guides"
-          :columns="columns"
+          :columns="tableColumns"
           :loading="isLoading"
           @action="handleAction"
         />
@@ -86,16 +74,15 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useGuideStore } from "~/store/guide";
-import { useNotification } from "~/composables/use-notification";
-import type { Guide } from "~/types/guide";
 import GuideFilter from "~/components/guide/guide-filter.vue";
 import UiTable from "~/components/ui-table.vue";
 import UiPagination from "~/components/ui-pagination.vue";
+import ExportDropdown from "~/components/export-to.vue";
+import type { Guide } from "~/types/guide";
 
 // Router and stores
 const router = useRouter();
 const guideStore = useGuideStore();
-const notification = useNotification();
 
 // State
 const showFilter = ref(false);
@@ -107,87 +94,54 @@ const filter = computed(() => guideStore.filter);
 const isLoading = computed(() => guideStore.isLoading);
 
 // Table columns configuration
-const columns = [
-  { key: "id", label: "ID Guide" },
+// Table columns configuration
+const tableColumns = [
+  { key: "id", label: "ID Guide", sortable: true },
   {
     key: "photo",
     label: "Foto Profil",
     render: (value: string) => ({
       component: "img",
       src: value,
-      alt: "Profile",
+      alt: "Profile", 
       class: "w-8 h-8 rounded-full object-cover",
     }),
   },
-  { key: "name", label: "Nama Lengkap" },
-  { key: "phone", label: "Nomor Telepon" },
-  { key: "ktp", label: "KTP" },
-  { key: "accountNumber", label: "Nomor Rekening" },
-  { key: "createdAt", label: "Akun Dibuat" },
-  {
-    key: "status",
-    label: "Status Akun",
-    render: (value: string) => {
-      const statusClasses: Record<string, string> = {
-        menunggu: "bg-yellow-100 text-yellow-800",
-        aktif: "bg-green-100 text-green-800",
-        dibatalkan: "bg-red-100 text-red-800",
-        nonaktif: "bg-gray-100 text-gray-800",
-      };
-      return {
-        component: "span",
-        class: `px-2 py-1 rounded-md text-xs font-medium ${ 
-          statusClasses[value] || ""
-        }`,
-        text: value.charAt(0).toUpperCase() + value.slice(1),
-      };
-    },
-  },
-  {
-    key: "actions",
-    label: "Aksi",
-    render: (_, row) => {
-      return {
-        component: "div",
-        class: "flex space-x-2",
-        slots: {
-          default: `
-            <button 
-              @click="$emit('action', { type: 'view', row: ${JSON.stringify(
-                row
-              )} })"
-              class="p-1 text-blue-600 hover:text-blue-800"
-            >
-              <span class="sr-only">View</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-            <button 
-              @click="$emit('action', { type: 'edit', row: ${JSON.stringify(
-                row
-              )} })"
-              class="p-1 text-yellow-600 hover:text-yellow-800"
-            >
-              <span class="sr-only">Edit</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-            </button>
-            <button 
-              @click="$emit('action', { type: 'delete', row: ${JSON.stringify(
-                row
-              )} })"
-              class="p-1 text-red-600 hover:text-red-800"
-            >
-              <span class="sr-only">Delete</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-            </button>
-          `,
-        },
-      };
-    },
-  },
+  { key: "name", label: "Nama Lengkap", sortable: true },
+  { key: "phone", label: "Nomor Telepon", sortable: true },
+  { key: "ktp", label: "KTP", sortable: true },
+  { key: "accountNumber", label: "Nomor Rekening", sortable: true },
+  { key: "createdAt", label: "Akun Dibuat", sortable: true, format: "date" },
+  { key: "status", label: "Status Akun", sortable: true },
+  { key: "actions", label: "Aksi" }
 ];
-  
+
+// Export columns configuration 
+const exportColumns = computed(() => {
+  return [
+    { key: "id", header: "ID Guide" },
+    { key: "name", header: "Nama Lengkap" },
+    { key: "phone", header: "Nomor Telepon" },
+    { key: "ktp", header: "KTP" },
+    { key: "accountNumber", header: "Nomor Rekening" },
+    { key: "createdAt", header: "Akun Dibuat" },
+    { key: "status", header: "Status Akun" }
+  ];
+});
+
+// Export data formatting
+const exportData = computed(() => {
+  return guides.value.map(guide => {
+    const exportGuide = { ...guide };
+    if (exportGuide.status) {
+      exportGuide.status = exportGuide.status.charAt(0).toUpperCase() + exportGuide.status.slice(1);
+    }
+    return exportGuide;
+  });
+});
+
 // Methods
-const applyFilter = (newFilter: Partial<GuideFilter>) => {
+const applyFilter = (newFilter) => {
   guideStore.setFilter(newFilter);
 };
 
@@ -197,7 +151,7 @@ const resetFilter = () => {
 };
 
 const handlePageChange = (page: number) => {
-  guideStore.setFilter({ page });
+  guideStore.setFilter({ ...filter.value, page });
 };
 
 const handleAction = async ({ type, row }: { type: string; row: Guide }) => {
