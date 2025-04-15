@@ -89,8 +89,8 @@ import { useGuideStore } from "~/store/guide";
 import { useNotification } from "~/composables/use-notification";
 import type { Guide } from "~/types/guide";
 import GuideFilter from "~/components/guide/guide-filter.vue";
-import UiTable from "~/components/ui/ui-table.vue";
-import UiPagination from "~/components/ui/ui-pagination.vue";
+import UiTable from "~/components/ui-table.vue";
+import UiPagination from "~/components/ui-pagination.vue";
 
 // Router and stores
 const router = useRouter();

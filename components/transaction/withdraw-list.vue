@@ -150,7 +150,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useWithdrawStore } from "~/store/withdraw";
 import TransactionFilter from "~/components/transaction/transaction-filter.vue";
-import UITable from "~/components/ui/ui-table.vue";
+import UITable from "~/components/ui-table.vue";
 
 // Router and stores
 const router = useRouter();

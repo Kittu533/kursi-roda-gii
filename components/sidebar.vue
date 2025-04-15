@@ -60,8 +60,8 @@
               ]"
               @click="isMobileView && $emit('toggle')"
             >
-              <component
-                :is="item.icon"
+              <Icon
+                :name="item.icon"
                 class="h-5 w-5 flex-shrink-0"
                 :class="{ 'mr-3': isOpen }"
                 v-if="item.icon"
@@ -86,8 +86,8 @@
         class="flex items-center justify-center w-full rounded-md py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         :class="{ 'justify-center': !isOpen }"
       >
-        <component 
-          :is="isOpen ? ChevronLeftIcon : ChevronRightIcon" 
+        <Icon 
+          :name="isOpen ? 'heroicons:chevron-left' : 'heroicons:chevron-right'" 
           class="h-5 w-5" 
         />
         <span 
@@ -104,21 +104,11 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
-import {
-  HomeIcon,
-  UsersIcon,
-  PackageIcon,
-  ShoppingCartIcon,
-  ArrowLeftRightIcon,
-  FileTextIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-vue-next";
 
 interface NavigationItem {
   name: string;
   href: string;
-  icon?: any;
+  icon?: string;
 }
 
 interface NavigationGroup {
@@ -169,42 +159,53 @@ const isRouteActive = (path: string): boolean => {
   return currentPath.value === path || currentPath.value.startsWith(`${path}/`);
 };
 
-// Updated navigation to match the image
+// Updated navigation with Nuxt icon names
 const navigation: NavigationGroup[] = [
   {
     title: "Beranda",
-    items: [{ name: "Beranda", href: "/admin", icon: HomeIcon }],
+    items: [{ name: "Beranda", href: "/admin", icon: "heroicons:home" }],
   },
   {
     title: "Pengguna",
     items: [
-      { name: "Pelanggan", href: "/admin/pengguna/pelanggan", icon: UsersIcon },
-      { name: "Guide", href: "/admin/pengguna/guide", icon: FileTextIcon },
-      { name: "Agen", href: "/admin/pengguna/agent", icon: UsersIcon },
+      { name: "Pelanggan", href: "/admin/pengguna/pelanggan", icon: "heroicons:users" },
+      { name: "Guide", href: "/admin/pengguna/guide", icon: "heroicons:document-text" },
+      { name: "Agen", href: "/admin/pengguna/agent", icon: "heroicons:users" },
     ],
   },
   {
     title: "Produk",
     items: [
-      { name: "Produk", href: "/admin/product", icon: PackageIcon },
+      { name: "Produk", href: "/admin/product", icon: "heroicons:cube" },
+      { name: "Voucher", href: "/admin/product", icon: "heroicons:cube" },
     ],
   },
   {
     title: "Transaksi",
     items: [
-      { name: "Pemesanan", href: "/admin/transaction/booking", icon: ShoppingCartIcon },
-      { name: "Penarikan", href: "/admin/transaction/withdraw", icon: ArrowLeftRightIcon },
+      { name: "Pemesanan", href: "/admin/transaction/booking", icon: "heroicons:shopping-cart" },
+      { name: "Penarikan", href: "/admin/transaction/withdraw", icon: "heroicons:arrows-right-left" },
     ],
   },
   {
     title: "Pengembalian",
-    items: [{ name: "Pengembalian", href: "/admin/return", icon: ArrowLeftRightIcon }],
+    items: [{ name: "Pengembalian", href: "/admin/return", icon: "heroicons:arrows-right-left" }],
+  },
+  {
+    title: "Komplain",
+    items: [{ name: "Komplain", href: "/admin/complaint", icon: "heroicons:chat-bubble-left-right" }],
   },
   {
     title: "Laporan",
-    items: [{ name: "Laporan", href: "/admin/report", icon: FileTextIcon }],
+    items: [{ name: "Laporan", href: "/admin/report", icon: "heroicons:document-text" }],
   },
 ];
+
+// Initialize screen size variables outside onMounted to avoid hook call issues
+if (typeof window !== 'undefined') {
+  isMobileView.value = window.innerWidth < 768;
+  isTabletOrLarger.value = window.innerWidth >= 768;
+}
 </script>
 
 <style scoped>

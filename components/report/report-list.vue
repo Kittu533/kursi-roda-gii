@@ -150,7 +150,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useReportStore } from "~/store/report";
 import ReportFilter from "~/components/report/report-filter.vue";
-import UITable from "~/components/ui/ui-table.vue";
+import UITable from "~/components/ui-table.vue";
 
 // Router and stores
 const router = useRouter();
