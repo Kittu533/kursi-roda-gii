@@ -2,7 +2,7 @@
     <div class="space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold tracking-tight">{{ isEditing ? 'Edit Agen' : 'Tambah Agen Baru' }}</h2>
+          <h2 class="text-2xl font-bold tracking-tight">{{ isEditing ? 'Edit Produk' : 'Tambah Produk Baru' }}</h2>
         </div>
       </div>
   
@@ -12,12 +12,8 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </NuxtLink>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-muted-foreground"><path d="m9 18 6-6-6-6"/></svg>
-        <NuxtLink to="/admin/pengguna/agent" class="text-muted-foreground hover:text-foreground">
-          Pengguna
-        </NuxtLink>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-muted-foreground"><path d="m9 18 6-6-6-6"/></svg>
-        <NuxtLink to="/admin/pengguna/agent" class="text-muted-foreground hover:text-foreground">
-          Agen
+        <NuxtLink to="/admin/product" class="text-muted-foreground hover:text-foreground">
+          Produk
         </NuxtLink>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right text-muted-foreground"><path d="m9 18 6-6-6-6"/></svg>
         <span>{{ isEditing ? 'Edit' : 'Tambah' }}</span>
@@ -34,15 +30,15 @@
       </div>
   
       <!-- Form -->
-      <form @submit.prevent="saveAgent" class="bg-white border rounded-md overflow-hidden">
+      <form @submit.prevent="saveProduct" class="bg-white border rounded-md overflow-hidden">
         <div class="p-4 border-b">
-          <h3 class="text-lg font-medium">{{ isEditing ? 'Data Agen' : 'Data Agen Baru' }}</h3>
+          <h3 class="text-lg font-medium">{{ isEditing ? 'Data Produk' : 'Data Produk Baru' }}</h3>
         </div>
         <div class="p-4 space-y-4">
-          <!-- ID Agen (read-only if editing) -->
+          <!-- ID Produk and ID Agent -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2">
-              <label for="id" class="text-sm font-medium">ID Agen</label>
+              <label for="id" class="text-sm font-medium">ID Produk</label>
               <input
                 id="id"
                 type="text"
@@ -55,126 +51,100 @@
             </div>
             
             <div class="space-y-2">
-              <label for="name" class="text-sm font-medium">Nama Lengkap</label>
+              <label for="agentId" class="text-sm font-medium">ID Agent</label>
               <input
-                id="name"
+                id="agentId"
                 type="text"
-                v-model="formData.name"
+                v-model="formData.agentId"
                 class="w-full px-3 py-2 border rounded-md"
                 required
               />
             </div>
           </div>
           
-          <!-- Email and Phone -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label for="email" class="text-sm font-medium">Email</label>
-              <input
-                id="email"
-                type="email"
-                v-model="formData.email"
-                class="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-            
-            <div class="space-y-2">
-              <label for="phone" class="text-sm font-medium">Nomor Telepon</label>
-              <input
-                id="phone"
-                type="tel"
-                v-model="formData.phone"
-                class="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-          </div>
-          
-          <!-- Username and Password -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label for="username" class="text-sm font-medium">Username</label>
-              <input
-                id="username"
-                type="text"
-                v-model="formData.username"
-                class="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-            
-            <div class="space-y-2">
-              <label for="password" class="text-sm font-medium">Kata Sandi</label>
-              <input
-                id="password"
-                type="text"
-                v-model="formData.password"
-                class="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-          </div>
-          
-          <!-- Location -->
+          <!-- Foto Produk -->
           <div class="space-y-2">
-            <label for="location" class="text-sm font-medium">Lokasi</label>
-            <select
-              id="location"
-              v-model="formData.location"
+            <label for="photo" class="text-sm font-medium">Foto Produk</label>
+            <input
+              id="photo"
+              type="file"
+              @change="handleFileUpload"
               class="w-full px-3 py-2 border rounded-md"
-              required
-            >
-              <option value="">Pilih Lokasi</option>
-              <option value="Makkah">Makkah</option>
-              <option value="Madinah">Madinah</option>
-            </select>
+            />
+            <div v-if="formData.photo" class="mt-2">
+              <img :src="formData.photo" class="w-20 h-20 object-cover rounded" />
+            </div>
           </div>
           
-          <!-- Opening Hours -->
+          <!-- Serial Number and Product Name -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2">
-              <label for="openHour" class="text-sm font-medium">Jam Buka</label>
+              <label for="serialNumber" class="text-sm font-medium">Nomor Seri</label>
               <input
-                id="openHour"
-                type="time"
-                v-model="formData.openHour"
+                id="serialNumber"
+                type="text"
+                v-model="formData.serialNumber"
                 class="w-full px-3 py-2 border rounded-md"
                 required
               />
             </div>
             
             <div class="space-y-2">
-              <label for="closeHour" class="text-sm font-medium">Jam Tutup</label>
+              <label for="productName" class="text-sm font-medium">Nama Produk</label>
               <input
-                id="closeHour"
-                type="time"
-                v-model="formData.closeHour"
+                id="productName"
+                type="text"
+                v-model="formData.productName"
                 class="w-full px-3 py-2 border rounded-md"
                 required
               />
             </div>
           </div>
           
-          <!-- Coordinates -->
+          <!-- Model and Max Weight -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-2">
-              <label for="latitude" class="text-sm font-medium">Latitude</label>
+              <label for="model" class="text-sm font-medium">Model Produk</label>
               <input
-                id="latitude"
+                id="model"
                 type="text"
-                v-model="formData.latitude"
+                v-model="formData.model"
                 class="w-full px-3 py-2 border rounded-md"
                 required
               />
             </div>
             
             <div class="space-y-2">
-              <label for="longitude" class="text-sm font-medium">Longitude</label>
+              <label for="maxWeight" class="text-sm font-medium">Max Berat (kg)</label>
               <input
-                id="longitude"
+                id="maxWeight"
+                type="number"
+                v-model="formData.maxWeight"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+          </div>
+          
+          <!-- Battery Life and Stock -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label for="batteryLife" class="text-sm font-medium">Daya Baterai</label>
+              <input
+                id="batteryLife"
                 type="text"
-                v-model="formData.longitude"
+                v-model="formData.batteryLife"
+                class="w-full px-3 py-2 border rounded-md"
+                required
+              />
+            </div>
+            
+            <div class="space-y-2">
+              <label for="stock" class="text-sm font-medium">Stok Barang</label>
+              <input
+                id="stock"
+                type="number"
+                v-model="formData.stock"
                 class="w-full px-3 py-2 border rounded-md"
                 required
               />
@@ -191,10 +161,10 @@
               required
             >
               <option value="">Pilih Status</option>
-              <option value="menunggu">Menunggu</option>
-              <option value="aktif">Aktif</option>
-              <option value="dibatalkan">Dibatalkan</option>
-              <option value="nonaktif">Nonaktif</option>
+              <option value="tersedia">Tersedia</option>
+              <option value="rusak">Rusak</option>
+              <option value="tersewa">Tersewa</option>
+              <option value="perbaikan">Perbaikan</option>
             </select>
           </div>
         </div>
@@ -204,7 +174,7 @@
           <button 
             type="button"
             class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50"
-            @click="router.push('/admin/pengguna/agent')"
+            @click="router.push('/admin/product')"
           >
             Batal
           </button>
@@ -222,47 +192,56 @@
   <script setup lang="ts">
   import { ref, computed, onMounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import { useAgentStore } from '~/store/agent'
-  import type { Agent } from '~/types/agent'
+  import { useProductStore } from '~/store/product'
+  import type { Product } from '~/types/product'
   
   // Router
   const route = useRoute()
   const router = useRouter()
-  const agentId = computed(() => route.params.id as string)
-  const isEditing = computed(() => agentId.value && agentId.value !== 'new')
+  const productId = computed(() => route.params.id as string)
+  const isEditing = computed(() => productId.value && productId.value !== 'new')
   
   // Store
-  const agentStore = useAgentStore()
-  const isLoading = computed(() => agentStore.isLoading)
-  const error = computed(() => agentStore.error)
+  const productStore = useProductStore()
+  const isLoading = computed(() => productStore.isLoading)
+  const error = computed(() => productStore.error)
   
   // Form data
-  const formData = ref<Partial<Agent>>({
-    name: '',
-    email: '',
-    phone: '',
-    username: '',
-    password: '',
-    location: '',
-    openHour: '',
-    closeHour: '',
-    latitude: '',
-    longitude: '',
-    status: '',
-    photo: '/placeholder.svg?height=32&width=32',
+  const formData = ref<Partial<Product>>({
+    id: '',
+    agentId: '',
+    photo: '',
+    serialNumber: '',
+    productName: '',
+    model: '',
+    maxWeight: 0,
+    batteryLife: '',
+    stock: 0,
+    status: ''
   })
   
   // Methods
-  const saveAgent = async () => {
+  const handleFileUpload = (event: Event) => {
+    const input = event.target as HTMLInputElement
+    if (input.files && input.files[0]) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        formData.value.photo = e.target?.result as string
+      }
+      reader.readAsDataURL(input.files[0])
+    }
+  }
+  
+  const saveProduct = async () => {
     try {
       if (isEditing.value) {
-        await agentStore.updateAgent(agentId.value, formData.value)
+        await productStore.updateProduct(productId.value, formData.value)
       } else {
-        await agentStore.createAgent(formData.value as Omit<Agent, 'id'>)
+        await productStore.createProduct(formData.value as Omit<Product, 'id'>)
       }
-      router.push('/admin/pengguna/agent')
+      router.push('/admin/product')
     } catch (error) {
-      console.error('Error saving agent:', error)
+      console.error('Error saving product:', error)
     }
   }
   
@@ -270,15 +249,13 @@
   onMounted(async () => {
     if (isEditing.value) {
       try {
-        const agent = await agentStore.loadAgentDetails(agentId.value)
-        if (agent) {
-          formData.value = { ...agent }
+        const product = await productStore.loadProductDetails(productId.value)
+        if (product) {
+          formData.value = { ...product }
         }
       } catch (error) {
-        console.error('Error loading agent details:', error)
+        console.error('Error loading product details:', error)
       }
     }
   })
   </script>
-  
-  

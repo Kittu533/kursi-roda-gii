@@ -3,9 +3,11 @@ export interface Product {
     agentId: string
     serialNumber: string
     productName: string
+    photo: string
     model: string
-    weight: string
+    maxWeight: string
     stock: number
+    batteryLife: string
     status: string
     createdAt: string
     updatedAt: string

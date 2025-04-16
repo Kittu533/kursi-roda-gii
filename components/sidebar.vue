@@ -1,7 +1,7 @@
 <template>
   <!-- Mobile overlay - only for small screens -->
-  <div 
-    v-if="isMounted && isMobileView && isOpen" 
+  <div
+    v-if="isMounted && isMobileView && isOpen"
     class="fixed inset-0 z-30 bg-black/50 md:hidden"
     @click="$emit('toggle')"
   ></div>
@@ -11,12 +11,12 @@
     :class="[
       // Different width based on screen size and open state
       isTabletOrLarger ? (isOpen ? 'w-64' : 'w-16') : '',
-      
+
       // Position differently based on screen size
       isTabletOrLarger ? 'relative' : 'fixed',
-      
+
       // Only translate off-screen on mobile when closed
-      !isTabletOrLarger && !isOpen ? '-translate-x-full' : 'translate-x-0'
+      !isTabletOrLarger && !isOpen ? '-translate-x-full' : 'translate-x-0',
     ]"
   >
     <!-- Logo -->
@@ -25,11 +25,14 @@
         <div
           class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-white"
         >
-          <img src="/logo-monitoring.webp" class="w-8 h-8" alt="Logo" />
+          <NuxtImg src="/logo-monitoring.webp" class="w-8 h-8" alt="Logo" />
         </div>
-        <span 
-          class="font-semibold transition-opacity duration-200" 
-          :class="{ 'opacity-0 w-0 overflow-hidden': !isOpen, 'opacity-100': isOpen }"
+        <span
+          class="font-semibold transition-opacity duration-200"
+          :class="{
+            'opacity-0 w-0 overflow-hidden': !isOpen,
+            'opacity-100': isOpen,
+          }"
         >
           Wheel Care
         </span>
@@ -56,20 +59,18 @@
                 isRouteActive(item.href)
                   ? 'bg-accent text-accent-foreground font-semibold'
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                !isOpen ? 'justify-center' : ''
+                !isOpen ? 'justify-center' : '',
               ]"
               @click="isMobileView && $emit('toggle')"
             >
-              <Icon
-                :name="item.icon"
+              <NuxtIcon
+                :name="item.NuxtIcon"
                 class="h-5 w-5 flex-shrink-0"
                 :class="{ 'mr-3': isOpen }"
-                v-if="item.icon"
+                v-if="item.NuxtIcon"
               />
-              <span 
-                v-if="isOpen" 
-                class="truncate transition-opacity"
-              >
+
+              <span v-if="isOpen" class="truncate transition-opacity">
                 {{ item.name }}
               </span>
               <span v-else class="sr-only">{{ item.name }}</span>
@@ -78,24 +79,22 @@
         </div>
       </nav>
     </div>
-    
+
     <!-- Toggle button - only show on tablet and larger -->
-    <div v-if="showToggle && isTabletOrLarger" class="border-t py-3 px-4 absolute bottom-0 w-full bg-white">
-      <button 
-        @click="$emit('toggle')" 
+    <div
+      v-if="showToggle && isTabletOrLarger"
+      class="border-t py-3 px-4 absolute bottom-0 w-full bg-white"
+    >
+      <button
+        @click="$emit('toggle')"
         class="flex items-center justify-center w-full rounded-md py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         :class="{ 'justify-center': !isOpen }"
       >
-        <Icon 
-          :name="isOpen ? 'heroicons:chevron-left' : 'heroicons:chevron-right'" 
-          class="h-5 w-5" 
+        <Icon
+          :name="isOpen ? 'heroicons:chevron-left' : 'heroicons:chevron-right'"
+          class="h-5 w-5"
         />
-        <span 
-          v-if="isOpen" 
-          class="ml-2 transition-opacity"
-        >
-          Collapse
-        </span>
+        <span v-if="isOpen" class="ml-2 transition-opacity"> Collapse </span>
       </button>
     </div>
   </div>
@@ -108,7 +107,7 @@ import { useRoute } from "vue-router";
 interface NavigationItem {
   name: string;
   href: string;
-  icon?: string;
+  NuxtIcon?: string;
 }
 
 interface NavigationGroup {
@@ -121,7 +120,7 @@ const props = defineProps<{
   showToggle?: boolean;
 }>();
 
-const emit = defineEmits(['toggle']);
+const emit = defineEmits(["toggle"]);
 
 const route = useRoute();
 const currentPath = computed(() => route.path);
@@ -133,7 +132,7 @@ const isMounted = ref(false);
 
 // Check screen size on resize
 const handleResize = () => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     isMobileView.value = window.innerWidth < 768;
     isTabletOrLarger.value = window.innerWidth >= 768;
   }
@@ -144,13 +143,13 @@ onMounted(() => {
   // Set initial value after component is mounted (client-side only)
   isMounted.value = true;
   handleResize();
-  
-  window.addEventListener('resize', handleResize);
+
+  window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('resize', handleResize);
+  if (typeof window !== "undefined") {
+    window.removeEventListener("resize", handleResize);
   }
 });
 
@@ -163,46 +162,97 @@ const isRouteActive = (path: string): boolean => {
 const navigation: NavigationGroup[] = [
   {
     title: "Beranda",
-    items: [{ name: "Beranda", href: "/admin", icon: "heroicons:home" }],
+    items: [{ name: "Beranda", href: "/admin", NuxtIcon: "ic:baseline-home" }],
   },
   {
     title: "Pengguna",
     items: [
-      { name: "Pelanggan", href: "/admin/pengguna/pelanggan", icon: "heroicons:users" },
-      { name: "Guide", href: "/admin/pengguna/guide", icon: "heroicons:document-text" },
-      { name: "Agen", href: "/admin/pengguna/agent", icon: "heroicons:users" },
+      {
+        name: "Pelanggan",
+        href: "/admin/pengguna/pelanggan",
+        NuxtIcon: "ic:baseline-person",
+      },
+      {
+        name: "Guide",
+        href: "/admin/pengguna/guide",
+        NuxtIcon: "ic:baseline-person",
+      },
+      {
+        name: "Agen",
+        href: "/admin/pengguna/agent",
+        NuxtIcon: "heroicons:users",
+      },
     ],
   },
   {
     title: "Produk",
     items: [
-      { name: "Produk", href: "/admin/product", icon: "heroicons:cube" },
-      { name: "Voucher", href: "/admin/product", icon: "heroicons:cube" },
+      {
+        name: "Kursi Roda",
+        href: "/admin/product",
+        NuxtIcon: "ic:baseline-wheelchair-pickup",
+      },
+      { name: "Voucher", href: "/admin/voucher", NuxtIcon: "heroicons:cube" },
+      {
+        name: "Paket",
+        href: "/admin/product/package",
+        NuxtIcon: "material-symbols:package-2",
+      },{
+        name: "Maintenance",
+        href: "/admin/maintenance",
+        NuxtIcon: "material-symbols:package-2",
+      },
     ],
   },
   {
     title: "Transaksi",
     items: [
-      { name: "Pemesanan", href: "/admin/transaction/booking", icon: "heroicons:shopping-cart" },
-      { name: "Penarikan", href: "/admin/transaction/withdraw", icon: "heroicons:arrows-right-left" },
+      {
+        name: "Pemesanan",
+        href: "/admin/transaction/booking",
+        NuxtIcon: "heroicons:shopping-cart",
+      },
+      {
+        name: "Penarikan",
+        href: "/admin/transaction/withdraw",
+        NuxtIcon: "heroicons:arrows-right-left",
+      },
     ],
   },
   {
     title: "Pengembalian",
-    items: [{ name: "Pengembalian", href: "/admin/return", icon: "heroicons:arrows-right-left" }],
+    items: [
+      {
+        name: "Pengembalian",
+        href: "/admin/return",
+        NuxtIcon: "heroicons:arrows-right-left",
+      },
+    ],
   },
   {
     title: "Komplain",
-    items: [{ name: "Komplain", href: "/admin/complaint", icon: "heroicons:chat-bubble-left-right" }],
+    items: [
+      {
+        name: "Komplain",
+        href: "/admin/complaint",
+        NuxtIcon: "material-symbols:chat-outline",
+      },
+    ],
   },
   {
     title: "Laporan",
-    items: [{ name: "Laporan", href: "/admin/report", icon: "heroicons:document-text" }],
+    items: [
+      {
+        name: "Laporan",
+        href: "/admin/report",
+        NuxtIcon: "heroicons:document-text",
+      },
+    ],
   },
 ];
 
 // Initialize screen size variables outside onMounted to avoid hook call issues
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   isMobileView.value = window.innerWidth < 768;
   isTabletOrLarger.value = window.innerWidth >= 768;
 }

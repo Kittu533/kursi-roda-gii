@@ -167,7 +167,7 @@
                 <div class="flex space-x-2 z-10">
                   <button
                     @click="emitAction('view', row.original)"
-                    class="p-1 text-primary hover:text-primary/80 transition-colors"
+                    class="p-1 text-[#2D59D4] hover:text-primary/80 transition-colors"
                     title="View"
                   >
                     <span class="sr-only">View</span>
@@ -189,7 +189,7 @@
                   </button>
                   <button
                     @click="emitAction('edit', row.original)"
-                    class="p-1 text-amber-600 hover:text-amber-700 transition-colors"
+                    class="p-1 text-[#FF780A] hover:text-amber-700 transition-colors"
                     title="Edit"
                   >
                     <span class="sr-only">Edit</span>
