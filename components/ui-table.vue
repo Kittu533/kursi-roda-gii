@@ -31,22 +31,7 @@
         </div>
       </div>
 
-      <!-- Per Page Selector -->
-      <!-- <div class="flex items-center gap-2">
-        <span class="text-sm text-muted-foreground">Rows per page:</span>
-        <select
-          v-model="pagination.pageSize"
-          class="border rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option
-            v-for="option in [10, 25, 50, 100]"
-            :key="option"
-            :value="option"
-          >
-            {{ option }}
-          </option>
-        </select>
-      </div> -->
+     
     </div>
 
     <!-- Loading state -->
@@ -98,7 +83,7 @@
                     header.column.getCanSort(),
                 },
                 header.id === 'actions'
-                  ? 'sticky right-0 z-10 bg-muted/30 shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)]'
+                  ? 'sticky right-0 z-10 hover:bg-muted bg-muted shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)]'
                   : '',
               ]"
               @click="
@@ -173,16 +158,16 @@
               class="px-4 py-3 text-sm"
               :class="[
                 cell.column.id === 'actions'
-                  ? 'sticky right-0 z-10 bg-white shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)] hover:bg-muted/30'
+                  ? 'sticky right-0  z-10 bg-white hover:bg-white shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.05)] hover:bg-muted/30'
                   : '',
               ]"
             >
               <!-- Special handling for action column -->
-              <template v-if="cell.column.id === 'actions'">
+              <template  v-if="cell.column.id === 'actions'">
                 <div class="flex space-x-2 z-10">
                   <button
                     @click="emitAction('view', row.original)"
-                    class="p-1 text-primary hover:text-primary/80 transition-colors"
+                    class="p-1 text-[#2D59D4] hover:text-primary/80 transition-colors"
                     title="View"
                   >
                     <span class="sr-only">View</span>
@@ -204,7 +189,7 @@
                   </button>
                   <button
                     @click="emitAction('edit', row.original)"
-                    class="p-1 text-amber-600 hover:text-amber-700 transition-colors"
+                    class="p-1 text-[#FF780A] hover:text-amber-700 transition-colors"
                     title="Edit"
                   >
                     <span class="sr-only">Edit</span>
@@ -311,7 +296,6 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   createColumnHelper,
-  type ColumnDef,
   type SortingState,
   type PaginationState,
 } from "@tanstack/vue-table";
