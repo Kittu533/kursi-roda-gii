@@ -195,7 +195,7 @@ const navigation: NavigationGroup[] = [
       { name: "Voucher", href: "/admin/voucher", NuxtIcon: "heroicons:cube" },
       {
         name: "Paket",
-        href: "/admin/product/package",
+        href: "/admin/packages",
         NuxtIcon: "material-symbols:package-2",
       },{
         name: "Maintenance",
