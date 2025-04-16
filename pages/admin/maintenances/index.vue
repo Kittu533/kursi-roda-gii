@@ -1,5 +1,7 @@
 <template>
-<div>asd</div>
+  <div><ProductList /></div>
 </template>
 
-
+<script setup lang="ts">
+import ProductList from "~/components/product/product-list.vue";
+</script>
