@@ -1,7 +1,3 @@
 <template>
-  <div><ProductList /></div>
+  <div>asd</div>
 </template>
-
-<script setup lang="ts">
-import ProductList from "~/components/product/product-list.vue";
-</script>
