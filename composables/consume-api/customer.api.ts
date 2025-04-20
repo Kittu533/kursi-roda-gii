@@ -7,7 +7,8 @@ const mockCustomers: Customer[] = [
   {
     id: "P0001",
     name: "Harman Prakoso",
-    phone: "+6281234567890",
+    phone: "81234567890",
+    phoneCode: "+62",
     email: "harman123@gmail.com",
     gender: "laki-laki",
     registerDate: "01/03/2025",
@@ -17,7 +18,8 @@ const mockCustomers: Customer[] = [
   {
     id: "P0002",
     name: "Nasisa Fadilla",
-    phone: "+6281234567890",
+    phone: "81234567890",
+    phoneCode: "+62",
     email: "nasifadilla.26@gmail.com",
     gender: "perempuan",
     registerDate: "02/03/2025",
@@ -27,7 +29,8 @@ const mockCustomers: Customer[] = [
   {
     id: "P0003",
     name: "Mia Anggreni",
-    phone: "+6281234567890",
+    phone: "81234567890",
+    phoneCode: "+62",
     email: "miaanggreni@gmail.com",
     gender: "perempuan",
     registerDate: "03/03/2025",
@@ -37,7 +40,8 @@ const mockCustomers: Customer[] = [
   {
     id: "P0004",
     name: "Finda Alifa",
-    phone: "+6281234567890",
+    phone: "81234567890",
+    phoneCode: "+62",
     email: "findal123@gmail.com",
     gender: "perempuan",
     registerDate: "04/03/2025",
@@ -47,7 +51,8 @@ const mockCustomers: Customer[] = [
   {
     id: "P0005",
     name: "Ilham Dean",
-    phone: "+6281234567890",
+    phone: "81234567890",
+    phoneCode: "+62",
     email: "ilhamdean0123@gmail.com",
     gender: "laki-laki",
     registerDate: "05/03/2025",
@@ -57,7 +62,8 @@ const mockCustomers: Customer[] = [
   {
     id: "P0004",
     name: "Finda Alifa",
-    phone: "+6281234567890",
+    phone: "81234567890",
+    phoneCode: "+62",
     email: "findal123@gmail.com",
     gender: "perempuan",
     registerDate: "04/03/2025",
@@ -67,32 +73,14 @@ const mockCustomers: Customer[] = [
   {
     id: "P0005",
     name: "Ilham Dean",
-    phone: "+6281234567890",
+    phone: "81234567890",
+    phoneCode: "+62",
     email: "ilhamdean0123@gmail.com",
     gender: "laki-laki",
     registerDate: "05/03/2025",
     lastLogin: "08/03/2025",
     status: "nonaktif",
-  },{
-    id: "P0004",
-    name: "Finda Alifa",
-    phone: "+6281234567890",
-    email: "findal123@gmail.com",
-    gender: "perempuan",
-    registerDate: "04/03/2025",
-    lastLogin: "09/03/2025",
-    status: "dibatalkan",
-  },
-  {
-    id: "P0005",
-    name: "Ilham Dean",
-    phone: "+6281234567890",
-    email: "ilhamdean0123@gmail.com",
-    gender: "laki-laki",
-    registerDate: "05/03/2025",
-    lastLogin: "08/03/2025",
-    status: "nonaktif",
-  },
+  }
 ]
 
 export function useCustomerApi() {

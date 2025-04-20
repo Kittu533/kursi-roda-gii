@@ -1,101 +1,79 @@
 <template>
-  <div class="mb-4 border rounded-lg p-4 bg-white shadow-sm">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-medium">Filter Data</h3>
-      <button
-        class="p-1 rounded-full hover:bg-muted"
-        @click="$emit('close')"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        <span class="sr-only">Close</span>
-      </button>
-    </div>
-    
-    <form @submit.prevent="applyFilter" class="w-full">
-      <div class="flex justify-between gap-[30px] flex-wrap flex-1 mx-auto"> 
-        <div class="space-y-2 flex-1">
-          <label for="periode" class="text-sm font-medium"
-            >Periode Tanggal</label
-          >
-          <input
-            id="periode"
-            type="date"
-            placeholder="Tanggal"
-            v-model="localFilter.date"
-            class="w-full px-3 py-1 border rounded-md"
-          />
-        </div>
-
-        <div class="space-y-2 flex-1">
-          <label for="status" class="text-sm font-medium">Pilih Status</label>
-          <select
-            id="status"
-            v-model="localFilter.status"
-            class="w-full px-3 py-1 border rounded-md"
-          >
-            <option value="">Status</option>
-            <option value="menunggu">Menunggu</option>
-            <option value="aktif">Aktif</option>
-            <option value="dibatalkan">Dibatalkan</option>
-            <option value="nonaktif">Nonaktif</option>
-          </select>
-        </div>
-        <div class="flex justify-end items-end gap-[30px] ">
-          <button
-            class="bg-[#4072EE] w-[115px] h-[34px] text-white p-[5px 10px 5px 10px] font-normal rounded-[5px] hover:bg-[#3060DD]"
-            type="submit"
-          >
-            Terapkan
-          </button>
-          <button
-            class="border border-red-500 text-red-500 w-[95px] h-[34px] p-[5px 10px 5px 10px] font-normal rounded-[5px] hover:bg-red-50"
-            type="button"
-            @click="$emit('reset')"
-          >
-            Batal
-          </button>
-        </div>
+  <div class="bg-white p-4 rounded-md border mb-6">
+    <div class="flex flex-col md:flex-row gap-4">
+      <!-- Status Filter -->
+      <div class="w-full md:w-1/3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <select
+          v-model="localFilter.status"
+          class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300"
+          @change="applyFilter"
+        >
+          <option value="">Semua</option>
+          <option value="aktif">Aktif</option>
+          <option value="nonaktif">Nonaktif</option>
+          <option value="menunggu">Menunggu</option>
+          <option value="dibatalkan">Dibatalkan</option>
+        </select>
       </div>
-    </form>
+
+      <!-- Date Filter -->
+      <div class="w-full md:w-1/3">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+        <input
+          v-model="localFilter.date"
+          type="date"
+          class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-300"
+          @change="applyFilter"
+        />
+      </div>
+
+      <!-- Reset Button -->
+      <div class="w-full md:w-1/3 flex items-end">
+        <button
+          @click="resetFilter"
+          class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+        >
+          Reset Filter
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { CustomerFilter } from '~/types/customer'
+import { ref, watch } from "vue"
+import type { CustomerFilter } from "~/types/customer"
 
-// Props and emits
 const props = defineProps<{
   filter: CustomerFilter
 }>()
 
 const emit = defineEmits<{
-  (e: 'apply', filter: Partial<CustomerFilter>): void
-  (e: 'reset'): void
-  (e: 'close'): void
+  (e: "update:filter", filter: CustomerFilter): void
+  (e: "reset"): void
 }>()
 
-// Local state
-const localFilter = ref({
-  status: props.filter.status || '',
-  date: props.filter.date || ''
-})
+// Create a local copy of the filter
+const localFilter = ref<CustomerFilter>({ ...props.filter })
 
-// Watch for prop changes
-watch(() => props.filter, (newFilter) => {
-  localFilter.value = {
-    status: newFilter.status || '',
-    date: newFilter.date || ''
-  }
-}, { deep: true })
+// Watch for external filter changes
+watch(
+  () => props.filter,
+  (newFilter) => {
+    localFilter.value = { ...newFilter }
+  },
+  { deep: true },
+)
 
-// Methods
+// Apply filter changes
 const applyFilter = () => {
-  emit('apply', {
-    status: localFilter.value.status,
-    date: localFilter.value.date,
-    page: 1 // Reset to first page when applying filter
-  })
+  emit("update:filter", { ...localFilter.value })
 }
-</script>
 
+// Reset filter
+const resetFilter = () => {
+  emit("reset")
+}
+
+</script>

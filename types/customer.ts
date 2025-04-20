@@ -32,6 +32,6 @@ export interface CustomerAction {
 export interface Column {
   key: string
   label: string
+  sortable?: boolean
   render?: (value: any, row?: any) => any
 }
-

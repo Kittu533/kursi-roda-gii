@@ -5,30 +5,27 @@
     class="fixed inset-0 z-30 bg-black/50 md:hidden"
     @click="$emit('toggle')"
   ></div>
-
   <div
-    class="sidebar bg-white border-r text-card-foreground transition-all duration-300 h-screen z-40"
+    class="sidebar bg-white border-r text-card-foreground transition-all duration-300 h-screen z-40 flex flex-col"
     :class="[
       // Different width based on screen size and open state
-      isTabletOrLarger ? (isOpen ? 'w-64' : 'w-16') : '',
-
+      isTabletOrLarger ? (isOpen ? 'w-64' : 'w-16') : 'w-64',
       // Position differently based on screen size
       isTabletOrLarger ? 'relative' : 'fixed',
-
       // Only translate off-screen on mobile when closed
       !isTabletOrLarger && !isOpen ? '-translate-x-full' : 'translate-x-0',
     ]"
   >
     <!-- Logo -->
-    <div class="flex h-16 items-center border-b px-4">
+    <div class="flex h-16 items-center border-b px-4 shrink-0">
       <div class="flex items-center gap-2">
         <div
-          class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-white"
+          class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-white shrink-0"
         >
           <NuxtImg src="/logo-monitoring.webp" class="w-8 h-8" alt="Logo" />
         </div>
         <span
-          class="font-semibold transition-opacity duration-200"
+          class="font-semibold transition-opacity duration-200 whitespace-nowrap"
           :class="{
             'opacity-0 w-0 overflow-hidden': !isOpen,
             'opacity-100': isOpen,
@@ -38,18 +35,18 @@
         </span>
       </div>
     </div>
-
-    <!-- Navigation -->
-    <div class="py-4 overflow-y-auto h-[calc(100vh-4rem)]">
-      <nav class="space-y-1 px-2 flex flex-col gap-6">
-        <div class="" v-for="(group, index) in navigation" :key="index">
+    
+    <!-- Navigation - with proper overflow handling -->
+    <div class="flex-1 overflow-y-auto overflow-x-hidden py-4">
+      <nav class="px-2 flex flex-col gap-4">
+        <div class="space-y-1" v-for="(group, index) in navigation" :key="index">
           <h2
             v-if="isOpen"
-            class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider transition-opacity"
+            class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1"
           >
             {{ group.title }}
           </h2>
-          <div class="mt-1 space-y-1">
+          <div class="space-y-1">
             <router-link
               v-for="item in group.items"
               :key="item.name"
@@ -69,8 +66,10 @@
                 :class="{ 'mr-3': isOpen }"
                 v-if="item.NuxtIcon"
               />
-
-              <span v-if="isOpen" class="truncate transition-opacity">
+              <span 
+                v-if="isOpen" 
+                class="truncate transition-opacity whitespace-nowrap"
+              >
                 {{ item.name }}
               </span>
               <span v-else class="sr-only">{{ item.name }}</span>
@@ -79,11 +78,11 @@
         </div>
       </nav>
     </div>
-
+    
     <!-- Toggle button - only show on tablet and larger -->
     <div
       v-if="showToggle && isTabletOrLarger"
-      class="border-t py-3 px-4 absolute bottom-0 w-full bg-white"
+      class="border-t py-3 px-4 w-full bg-white shrink-0"
     >
       <button
         @click="$emit('toggle')"
@@ -120,8 +119,6 @@ const props = defineProps<{
   showToggle?: boolean;
 }>();
 
-const emit = defineEmits(["toggle"]);
-
 const route = useRoute();
 const currentPath = computed(() => route.path);
 
@@ -129,6 +126,10 @@ const currentPath = computed(() => route.path);
 const isMobileView = ref(false);
 const isTabletOrLarger = ref(true);
 const isMounted = ref(false);
+
+// Initialize screen size variables outside onMounted to avoid hook call issues
+isMobileView.value = false;
+isTabletOrLarger.value = true;
 
 // Check screen size on resize
 const handleResize = () => {
@@ -143,7 +144,6 @@ onMounted(() => {
   // Set initial value after component is mounted (client-side only)
   isMounted.value = true;
   handleResize();
-
   window.addEventListener("resize", handleResize);
 });
 
@@ -227,6 +227,11 @@ const navigation: NavigationGroup[] = [
         href: "/admin/return",
         NuxtIcon: "heroicons:arrows-right-left",
       },
+      {
+        name: "Pengembalian-Agen",
+        href: "/admin/return-agent",
+        NuxtIcon: "heroicons:arrows-right-left",
+      },
     ],
   },
   {
@@ -252,10 +257,6 @@ const navigation: NavigationGroup[] = [
 ];
 
 // Initialize screen size variables outside onMounted to avoid hook call issues
-if (typeof window !== "undefined") {
-  isMobileView.value = window.innerWidth < 768;
-  isTabletOrLarger.value = window.innerWidth >= 768;
-}
 </script>
 
 <style scoped>
