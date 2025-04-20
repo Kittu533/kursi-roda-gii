@@ -125,7 +125,7 @@ export function useAuth() {
   const signOut = () => {
     user.value = null
     localStorage.removeItem('user')
-    router.push('/auth/signin')
+    router.push('/admin/auth/signin')
   }
 
   return {

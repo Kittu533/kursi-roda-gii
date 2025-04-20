@@ -1,9 +1,7 @@
 <template>
   <div class="data-table-container">
     <!-- Table Controls -->
-    <div
-      class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3"
-    >
+    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
       <!-- Search Filter -->
       <div class="relative w-full md:w-64">
         <input
@@ -30,15 +28,11 @@
           </svg>
         </div>
       </div>
-
-     
     </div>
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center py-8">
-      <div
-        class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"
-      ></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
     </div>
 
     <!-- Empty state -->
@@ -73,6 +67,9 @@
       <table class="w-full border-collapse">
         <thead class="bg-muted/30">
           <tr>
+            <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-12">
+              No
+            </th>
             <th
               v-for="header in table.getHeaderGroups()[0].headers"
               :key="header.id"
@@ -148,10 +145,13 @@
         </thead>
         <tbody>
           <tr
-            v-for="row in table.getRowModel().rows"
+            v-for="(row, index) in table.getRowModel().rows"
             :key="row.id"
             class="border-b hover:bg-muted/30 transition-colors"
           >
+            <td class="px-4 py-3 text-sm w-12">
+              {{ index + 1 }}
+            </td>
             <td
               v-for="cell in row.getVisibleCells()"
               :key="cell.id"
@@ -163,7 +163,7 @@
               ]"
             >
               <!-- Special handling for action column -->
-              <template  v-if="cell.column.id === 'actions'">
+              <template v-if="cell.column.id === 'actions'">
                 <div class="flex space-x-2 z-10">
                   <button
                     @click="emitAction('view', row.original)"
@@ -205,9 +205,7 @@
                       stroke-linejoin="round"
                       class="lucide lucide-pencil"
                     >
-                      <path
-                        d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"
-                      />
+                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                       <path d="m15 5 4 4" />
                     </svg>
                   </button>
@@ -288,16 +286,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import {
   useVueTable,
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   createColumnHelper,
   type SortingState,
-  type PaginationState,
 } from "@tanstack/vue-table";
 
 // Define types
@@ -334,15 +330,13 @@ const props = defineProps<{
   loading?: boolean;
   initialSortKey?: string;
   initialSortOrder?: "asc" | "desc";
-  initialPerPage?: number;
   statusColorMap?: StatusColorMap;
 }>();
 
 // Emits with proper types
 const emit = defineEmits<{
-  (e: "action", action: { type: string; row: Record<string, unknown> }): void;
+  (e: "action", action: { type: string; row: Record<string, unknown> }): void | Promise<void>;
   (e: "sort", sortData: { key: string; order: "asc" | "desc" }): void;
-  (e: "per-page-change", perPage: number): void;
 }>();
 
 // State
@@ -352,19 +346,12 @@ const globalFilter = ref("");
 
 // Sorting state
 const sorting = ref<SortingState>([]);
-const pagination = ref<PaginationState>({
-  pageIndex: 0,
-  pageSize: props.initialPerPage || 10,
-});
 
 // Default status color mapping
 const defaultStatusColorMap: StatusColorMap = {
-  // Map from your example
   paid: { bg: "bg-green-100", text: "text-green-800" },
   failed: { bg: "bg-red-100", text: "text-red-800" },
   refunded: { bg: "bg-gray-100", text: "text-gray-800" },
-
-  // Map from the image
   aktif: { bg: "bg-green-100", text: "text-green-800" },
   nonaktif: { bg: "bg-gray-100", text: "text-gray-800" },
   dibekukan: { bg: "bg-red-100", text: "text-red-800" },
@@ -419,7 +406,6 @@ const tableColumns = computed(() => {
           if (typeof renderResult === "string") {
             return renderResult;
           }
-          // For complex render results, just return the value for now
           return renderResult.text || String(value);
         }
 
@@ -440,7 +426,7 @@ if (props.initialSortKey && props.initialSortOrder) {
   ];
 }
 
-// Create the table instance
+// Create the table instance without pagination
 const table = useVueTable({
   get data() {
     return props.data;
@@ -451,9 +437,6 @@ const table = useVueTable({
   state: {
     get sorting() {
       return sorting.value;
-    },
-    get pagination() {
-      return pagination.value;
     },
     get globalFilter() {
       return globalFilter.value;
@@ -469,10 +452,6 @@ const table = useVueTable({
       emit("sort", { key: id, order: desc ? "desc" : "asc" });
     }
   },
-  onPaginationChange: (updater) => {
-    pagination.value =
-      typeof updater === "function" ? updater(pagination.value) : updater;
-  },
   onGlobalFilterChange: (updater) => {
     globalFilter.value =
       typeof updater === "function" ? updater(globalFilter.value) : updater;
@@ -480,18 +459,8 @@ const table = useVueTable({
   getCoreRowModel: getCoreRowModel(),
   getSortedRowModel: getSortedRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
-  // Enable debugging in development
   debugTable: process.env.NODE_ENV === "development",
 });
-
-// Watch for pagination changes
-watch(
-  () => pagination.value.pageSize,
-  (newPageSize) => {
-    emit("per-page-change", newPageSize);
-  }
-);
 
 // Format cell values based on format type
 const formatCellValue = (value: unknown, format?: string): string => {

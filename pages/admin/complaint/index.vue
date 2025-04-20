@@ -54,7 +54,9 @@
           :data="complaints"
           :columns="columns"
           :loading="isLoading"
-          @action="handleAction"
+          @action="
+            ($event) => handleAction($event as { type: string; row: Complaint })
+          "
         />
 
         <UiPagination
@@ -67,7 +69,7 @@
         />
       </div>
     </div>
-    
+
     <!-- Confirmation Modals -->
     <ConfirmationModal
       v-model:isOpen="isDeleteModalOpen"
@@ -76,7 +78,7 @@
       @confirm="confirmDelete"
       @cancel="isDeleteModalOpen = false"
     />
-    
+
     <ConfirmationModal
       v-model:isOpen="isSuccessModalOpen"
       type="success"
@@ -109,12 +111,13 @@ const showFilter = ref(false);
 const isDeleteModalOpen = ref(false);
 const isSuccessModalOpen = ref(false);
 const selectedComplaint = ref<Complaint | null>(null);
+const isLoading = ref(false); // Initialize isLoading here
 
 // Computed
 const complaints = computed(() => complaintStore.complaints);
 const pagination = computed(() => complaintStore.pagination);
 const filter = computed(() => complaintStore.filter);
-const isLoading = computed(() => complaintStore.isLoading);
+// const isLoading = computed(() => complaintStore.isLoading); // Remove this line
 
 // Table columns configuration
 const columns = [
@@ -133,9 +136,9 @@ const columns = [
         open: "bg-orange-100 text-orange-800",
         forwarded: "bg-blue-100 text-blue-800",
         resolved: "bg-green-100 text-green-800",
-        rejected: "bg-red-100 text-red-800"
+        rejected: "bg-red-100 text-red-800",
       };
-      
+
       const status = value.toLowerCase();
       return {
         component: "span",
@@ -146,7 +149,7 @@ const columns = [
       };
     },
   },
-  { key: "actions", label: "Aksi" }
+  { key: "actions", label: "Aksi" },
 ];
 
 // Export columns
@@ -159,7 +162,7 @@ const exportColumns = computed(() => {
     { key: "description", header: "Deskripsi" },
     { key: "startDate", header: "Tanggal Dibuat" },
     { key: "completionDate", header: "Tanggal Diperbarui" },
-    { key: "status", header: "Status" }
+    { key: "status", header: "Status" },
   ];
 });
 
@@ -182,15 +185,15 @@ const handlePageChange = (page: number) => {
   complaintStore.setFilter({ page });
 };
 
-const handleAction = async ({ type, row }: { type: string; row: Complaint }) => {
+const handleAction = ({ type, row }: { type: string; row: Complaint }) => {
   const complaintData = row;
 
   switch (type) {
     case "view":
-      await router.push(`/admin/complaint/${complaintData.id}`);
+      router.push(`/admin/complaint/${complaintData.id}`);
       break;
     case "edit":
-      await router.push(`/admin/complaint/${complaintData.id}/edit`);
+      router.push(`/admin/complaint/${complaintData.id}/edit`);
       break;
     case "delete":
       selectedComplaint.value = complaintData;
@@ -218,10 +221,18 @@ const confirmDelete = async () => {
 
 // Lifecycle
 onMounted(async () => {
+  await loadData();
+});
+
+// Load data function to prevent conditional hook call
+const loadData = async () => {
+  isLoading.value = true;
   try {
     await complaintStore.loadComplaints();
   } catch (error) {
     console.error("Error loading complaints:", error);
+  } finally {
+    isLoading.value = false;
   }
-});
+};
 </script>

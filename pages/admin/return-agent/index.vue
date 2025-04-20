@@ -26,6 +26,7 @@
           </svg>
           <span>Tambah Pengembalian</span>
         </button>
+        <!-- Komponen ExportDropdown -->
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
@@ -94,16 +95,16 @@
         />
       </div>
     </div>
-
+    
     <!-- Confirmation Modals -->
     <ConfirmationModal
       v-model:isOpen="isDeleteModalOpen"
       type="delete"
-      :message="`Apakah anda yakin ingin menghapus pengembalian ${selectedReturn?.id || ''}?`"
+      :message="`Apakah anda yakin ingin menghapus pengembalian ${selectedReturn?.idPengembalian || ''}?`"
       @confirm="confirmDelete"
       @cancel="isDeleteModalOpen = false"
     />
-
+    
     <ConfirmationModal
       v-model:isOpen="isSuccessModalOpen"
       type="success"
@@ -117,9 +118,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import { useReturnStore } from "~/store/return";
-import { useNotification } from "~/composables/use-notification";
-import type { Return } from "~/types/return";
+import { useReturnItemStore } from "~/store/return-agent";
+import type { ReturnItem } from "~/types/return-agent";
 import ReturnFilter from "~/components/return/return-filter.vue";
 import UiTable from "~/components/ui-table.vue";
 import UiPagination from "~/components/ui-pagination.vue";
@@ -128,14 +128,14 @@ import ExportDropdown from "~/components/export-to.vue";
 
 // Router and stores
 const router = useRouter();
-const returnStore = useReturnStore();
-const notification = useNotification();
+const returnStore = useReturnItemStore();
+
 
 // State
 const showFilter = ref(false);
 const isDeleteModalOpen = ref(false);
 const isSuccessModalOpen = ref(false);
-const selectedReturn = ref<Return | null>(null);
+const selectedReturn = ref<ReturnItem | null>(null);
 
 // Computed
 const returns = computed(() => returnStore.returns);
@@ -146,17 +146,28 @@ const error = computed(() => returnStore.error);
 
 // Table columns configuration
 const columns = [
-  { key: "id", label: "ID Return" },
-  { key: "transactionId", label: "ID Transaksi" },
-  { key: "customerId", label: "ID Pelanggan" },
+  { key: "idPengembalian", label: "ID Pengembalian" },
+  { key: "idTransaksi", label: "ID Transaksi" },
+  { key: "jenisKerusakan", label: "Jenis Kerusakan" },
   {
-    key: "amount",
-    label: "Jumlah",
+    key: "biayaTambahan",
+    label: "Biaya Tambahan",
     render: (value: number) => `Rp${formatCurrency(value)}`,
   },
-  { key: "reason", label: "Alasan" },
-  { key: "returnDate", label: "Tanggal" },
-  { key: "returnTime", label: "Waktu" },
+  { key: "catatan", label: "Catatan" },
+  { key: "tanggalPengembalian", label: "Tanggal" },
+  {
+    key: "bukti",
+    label: "Bukti",
+    render: (value: string) => ({
+      component: "a",
+      text: "Lihat Foto",
+      attrs: {
+        href: value,
+        target: "_blank"
+      }
+    })
+  },
   {
     key: "status",
     label: "Status",
@@ -176,34 +187,32 @@ const columns = [
       };
     },
   },
-  { key: "actions", label: "Aksi" },
+  { key: "actions", label: "Aksi" }
 ];
 
 // Export columns
 const exportColumns = computed(() => {
   return [
-    { key: "id", header: "ID Return" },
-    { key: "transactionId", header: "ID Transaksi" },
-    { key: "customerId", header: "ID Pelanggan" },
-    { key: "amount", header: "Jumlah" },
-    { key: "reason", header: "Alasan" },
-    { key: "returnDate", header: "Tanggal" },
-    { key: "returnTime", header: "Waktu" },
-    { key: "status", header: "Status" },
+    { key: "idPengembalian", header: "ID Pengembalian" },
+    { key: "idTransaksi", header: "ID Transaksi" },
+    { key: "jenisKerusakan", header: "Jenis Kerusakan" },
+    { key: "biayaTambahan", header: "Biaya Tambahan" },
+    { key: "catatan", header: "Catatan" },
+    { key: "tanggalPengembalian", header: "Tanggal" },
+    { key: "bukti", header: "Bukti" },
+    { key: "status", header: "Status" }
   ];
 });
 
 // Export data
 const exportData = computed(() => {
-  return returns.value.map((returnItem) => {
+  return returns.value.map(returnItem => {
     const exportReturn = { ...returnItem };
     if (exportReturn.status) {
-      exportReturn.status =
-        exportReturn.status.charAt(0).toUpperCase() +
-        exportReturn.status.slice(1);
+      exportReturn.status = exportReturn.status.charAt(0).toUpperCase() + exportReturn.status.slice(1);
     }
-    if (exportReturn.amount) {
-      exportReturn.amount = `Rp${formatCurrency(exportReturn.amount)}`;
+    if (exportReturn.biayaTambahan) {
+      exportReturn.biayaTambahan = `Rp${formatCurrency(exportReturn.biayaTambahan)}`;
     }
     return exportReturn;
   });
@@ -214,7 +223,7 @@ const formatCurrency = (value: number): string => {
   return value.toLocaleString("id-ID");
 };
 
-const applyFilter = (newFilter: Partial<ReturnFilter>) => {
+const applyFilter = (newFilter: Partial<ReturnItemFilter>) => {
   returnStore.setFilter(newFilter);
 };
 
@@ -227,15 +236,15 @@ const handlePageChange = (page: number) => {
   returnStore.setFilter({ page });
 };
 
-const handleAction = async ({ type, row }: { type: string; row: Return }) => {
+const handleAction = async ({ type, row }: { type: string; row: ReturnItem }) => {
   const returnItem = row;
 
   switch (type) {
     case "view":
-      await router.push(`/admin/return/${returnItem.id}`);
+      await router.push(`/admin/return-agent/${returnItem.idPengembalian}`);
       break;
     case "edit":
-      await router.push(`/admin/return/${returnItem.id}/edit`);
+      await router.push(`/admin/return-agent/${returnItem.idPengembalian}/edit`);
       break;
     case "delete":
       selectedReturn.value = returnItem;
@@ -248,7 +257,7 @@ const handleAction = async ({ type, row }: { type: string; row: Return }) => {
 const confirmDelete = async () => {
   if (selectedReturn.value) {
     try {
-      await returnStore.deleteReturn(selectedReturn.value.id);
+      await returnStore.deleteReturn(selectedReturn.value.idPengembalian);
       isDeleteModalOpen.value = false;
       isSuccessModalOpen.value = true;
       setTimeout(() => {
@@ -256,7 +265,6 @@ const confirmDelete = async () => {
       }, 2000);
     } catch (error) {
       console.error("Error deleting return:", error);
-      notification.error("Gagal menghapus pengembalian");
       isDeleteModalOpen.value = false;
     }
   }
@@ -268,7 +276,6 @@ onMounted(async () => {
     await returnStore.loadReturns();
   } catch (error) {
     console.error("Error loading returns:", error);
-    notification.error("Gagal memuat data pengembalian");
   }
 });
 </script>

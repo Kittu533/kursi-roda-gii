@@ -95,14 +95,17 @@ const isLoading = computed(() => customerStore.isLoading);
 
 // Table columns configuration for TanStack Table
 const tableColumns = [
-  { key: "id", label: "ID Pelanggan", sortable: true },
+  {key :"id", label: "ID Pelanggan", sortable: true, format: "number"},
   { key: "name", label: "Nama Lengkap", sortable: true },
-  { key: "phone", label: "Nomor Telepon", sortable: true },
+  { key: "phone", label: "Nomor Telepon", sortable: true, 
+    format: (value, row) => `${row.phoneCode}${value}` },
   { key: "email", label: "Alamat Email", sortable: true },
-  { key: "gender", label: "Jenis Kelamin", sortable: true },
+  { key: "gender", label: "Jenis Kelamin", sortable: true,
+    format: (value) => value.charAt(0).toUpperCase() + value.slice(1) },
   { key: "registerDate", label: "Akun Dibuat", sortable: true, format: "date" },
   { key: "lastLogin", label: "Akun Diperbarui", sortable: true, format: "date" },
-  { key: "status", label: "Status Akun", sortable: true },
+  { key: "status", label: "Status Akun", sortable: true,
+    format: (value) => value.charAt(0).toUpperCase() + value.slice(1) },
   { key: "actions", label: "Aksi" }
 ];
 
