@@ -1,19 +1,21 @@
 <template>
-  <div class="space-y-4">
+  <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight">Data Pengembaliann</h2>
+        <h2 class="text-2xl font-bold tracking-tight">Komplain</h2>
       </div>
+
       <div class="flex items-center gap-2">
         <!-- Komponen ExportDropdown -->
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
-          title="Data Pengembalian"
-          filename="Complaints"
+          title="Data Pelanggan"
+          filename="pelanggan"
         />
+
         <button
-          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
+          class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
         >
           <svg
@@ -44,90 +46,138 @@
       @close="showFilter = false"
     />
 
-    <!-- Data Table -->
-    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
-      <div class="p-4 border-b">
-        <h3 class="text-lg font-medium">Data Pengembalian</h3>
-      </div>
-      <div class="p-4">
-        <UiTable
-          :data="complaints"
-          :columns="columns"
-          :loading="isLoading"
-          @action="
-            ($event) => handleAction($event as { type: string; row: Complaint })
-          "
-        />
+    <data-table
+      title="Data Komplain"
+      :headers="columns"
+      :items="complaints"
+      :pagination="enhancedPagination"
+      :is-loading="isLoading"
+      :show-export="true"
+      :export-columns="exportColumns"
+      :export-data="exportData"
+      export-filename="complaints-data"
+      :rows-per-page-options="[5, 10, 20, 30, 50, 100]"
+      :default-rows-per-page="itemsPerPage"
+      @action="handleAction"
+      @page-change="handlePageChange"
+      @rows-per-page-change="handleRowsPerPageChange"
+      @delete="handleDelete"
+    />
 
-        <UiPagination
-          v-if="pagination && pagination.totalPages > 1"
-          :current-page="pagination.currentPage"
-          :total-pages="pagination.totalPages"
-          :total="pagination.total"
-          :items-per-page="pagination.itemsPerPage"
-          @page-change="handlePageChange"
-        />
-      </div>
-    </div>
-
-    <!-- Confirmation Modals -->
+    <!-- Delete Confirmation Modal -->
     <ConfirmationModal
-      v-model:isOpen="isDeleteModalOpen"
-      type="delete"
-      :message="`Apakah anda yakin ingin menghapus data pengembalian dengan ID ${selectedComplaint?.complaintId || ''}?`"
+      v-if="isDeleteModalOpen"
+      title="Delete Complaint"
+      message="Are you sure you want to delete this complaint? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
       @confirm="confirmDelete"
       @cancel="isDeleteModalOpen = false"
     />
 
+    <!-- Success Modal -->
     <ConfirmationModal
-      v-model:isOpen="isSuccessModalOpen"
-      type="success"
-      message="Data pengembalian berhasil dihapus"
-      :showButtons="false"
-      @cancel="isSuccessModalOpen = false"
+      v-if="isSuccessModalOpen"
+      title="Success"
+      message="Complaint has been deleted successfully."
+      confirm-text="OK"
+      :show-cancel="false"
+      @confirm="isSuccessModalOpen = false"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useComplaintStore } from "~/store/complaint";
-import { useNotification } from "~/composables/use-notification";
 import type { Complaint } from "~/types/complaint";
-import ComplaintFilter from "~/components/complaint/complaint-filter.vue";
-import UiTable from "~/components/ui-table.vue";
-import UiPagination from "~/components/ui-pagination.vue";
-import ConfirmationModal from "~/components/ui/modals/confirmation-modal.vue";
+import type {
+  TableHeader,
+  ExportColumn,
+  TableItem,
+  TablePagination,
+} from "~/components/data-table.vue";
 import ExportDropdown from "~/components/export-to.vue";
-
+import ComplaintFilter from "~/components/complaint/complaint-filter.vue";
 // Router and stores
 const router = useRouter();
 const complaintStore = useComplaintStore();
-const notification = useNotification();
 
 // State
 const showFilter = ref(false);
 const isDeleteModalOpen = ref(false);
 const isSuccessModalOpen = ref(false);
 const selectedComplaint = ref<Complaint | null>(null);
-const isLoading = ref(false); // Initialize isLoading here
+const isLoading = ref(false);
+const itemsPerPage = ref(10); // Default items per page
+
+// Initialize from store filter if available
+onMounted(() => {
+  if (complaintStore.filter.itemsPerPagePage) {
+    itemsPerPage.value = complaintStore.filter.itemsPerPage;
+  }
+});
+
+// Load data function
+const loadData = async () => {
+  isLoading.value = true;
+  try {
+    await complaintStore.loadComplaints();
+  } catch (error) {
+    console.error("Error loading complaints:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 // Computed
-const complaints = computed(() => complaintStore.complaints);
+const complaints = computed<TableItem[]>(() => {
+  // Make sure we're returning data that matches the TableItem interface
+  return complaintStore.complaints.map((complaint) => ({
+    ...complaint,
+    // Ensure all properties are properly typed
+    id: complaint.id || "",
+    complaintId: complaint.complaintId || "",
+    customerId: complaint.customerId || "",
+    transactionId: complaint.transactionId || "",
+    type: complaint.type || "",
+    description: complaint.description || "",
+    startDate: complaint.startDate || "",
+    completionDate: complaint.completionDate || "",
+    status: complaint.status || "",
+  }));
+});
+
 const pagination = computed(() => complaintStore.pagination);
 const filter = computed(() => complaintStore.filter);
-// const isLoading = computed(() => complaintStore.isLoading); // Remove this line
+
+// Enhanced pagination with items per page
+const enhancedPagination = computed<TablePagination>(() => {
+  if (!pagination.value) {
+    return {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: complaints.value.length,
+      itemsPerPage: itemsPerPage.value,
+    };
+  }
+
+  return {
+    ...pagination.value,
+    itemsPerPage: itemsPerPage.value,
+  };
+});
 
 // Table columns configuration
-const columns = [
+const columns: TableHeader[] = [
   { key: "complaintId", label: "ID Komplain" },
   { key: "customerId", label: "ID Pelanggan" },
   { key: "transactionId", label: "ID Transaksi" },
   { key: "type", label: "Jenis" },
   { key: "description", label: "Deskripsi" },
-  { key: "startDate", label: "Tanggal Dibuat" },
-  { key: "completionDate", label: "Tanggal Diperbarui" },
+  { key: "startDate", label: "Tanggal Dibuat", format: "date" },
+  { key: "completionDate", label: "Tanggal Diperbarui", format: "date" },
   {
     key: "status",
     label: "Status",
@@ -153,7 +203,7 @@ const columns = [
 ];
 
 // Export columns
-const exportColumns = computed(() => {
+const exportColumns = computed<ExportColumn[]>(() => {
   return [
     { key: "complaintId", header: "ID Komplain" },
     { key: "customerId", header: "ID Pelanggan" },
@@ -173,16 +223,35 @@ const exportData = computed(() => {
 
 // Methods
 const applyFilter = (newFilter: Partial<ComplaintFilter>) => {
-  complaintStore.setFilter(newFilter);
+  complaintStore.setFilter({
+    ...newFilter,
+    itemsPerPage: itemsPerPage.value,
+  });
 };
 
 const resetFilter = () => {
   complaintStore.resetFilter();
+  // Keep the current itemsPerPage value after reset
+  complaintStore.setFilter({ itemsPerPage: itemsPerPage.value });
   showFilter.value = false;
 };
 
 const handlePageChange = (page: number) => {
-  complaintStore.setFilter({ page });
+  complaintStore.setFilter({
+    page,
+    itemsPerPage: itemsPerPage.value,
+  });
+};
+
+const handleRowsPerPageChange = (size: number) => {
+  console.log("Rows per page changed to:", size);
+  itemsPerPage.value = size;
+
+  // Reset to page 1 when changing page size and update the store
+  complaintStore.setFilter({
+    page: 1,
+    itemsPerPage: size,
+  });
 };
 
 const handleAction = ({ type, row }: { type: string; row: Complaint }) => {
@@ -195,11 +264,13 @@ const handleAction = ({ type, row }: { type: string; row: Complaint }) => {
     case "edit":
       router.push(`/admin/complaint/${complaintData.id}/edit`);
       break;
-    case "delete":
-      selectedComplaint.value = complaintData;
-      isDeleteModalOpen.value = true;
-      break;
   }
+};
+
+// Handle delete from data-table component
+const handleDelete = (row: Complaint) => {
+  selectedComplaint.value = row;
+  isDeleteModalOpen.value = true;
 };
 
 // Confirm delete handler
@@ -223,16 +294,4 @@ const confirmDelete = async () => {
 onMounted(async () => {
   await loadData();
 });
-
-// Load data function to prevent conditional hook call
-const loadData = async () => {
-  isLoading.value = true;
-  try {
-    await complaintStore.loadComplaints();
-  } catch (error) {
-    console.error("Error loading complaints:", error);
-  } finally {
-    isLoading.value = false;
-  }
-};
 </script>

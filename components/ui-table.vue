@@ -1,7 +1,9 @@
 <template>
   <div class="data-table-container">
     <!-- Table Controls -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+    <div
+      class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3"
+    >
       <!-- Search Filter -->
       <div class="relative w-full md:w-64">
         <input
@@ -32,7 +34,9 @@
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"
+      ></div>
     </div>
 
     <!-- Empty state -->
@@ -67,7 +71,9 @@
       <table class="w-full border-collapse">
         <thead class="bg-muted/30">
           <tr>
-            <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-12">
+            <th
+              class="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-12"
+            >
               No
             </th>
             <th
@@ -205,7 +211,9 @@
                       stroke-linejoin="round"
                       class="lucide lucide-pencil"
                     >
-                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path
+                        d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"
+                      />
                       <path d="m15 5 4 4" />
                     </svg>
                   </button>
@@ -335,7 +343,10 @@ const props = defineProps<{
 
 // Emits with proper types
 const emit = defineEmits<{
-  (e: "action", action: { type: string; row: Record<string, unknown> }): void | Promise<void>;
+  (
+    e: "action",
+    action: { type: string; row: Record<string, unknown> }
+  ): void | Promise<void>;
   (e: "sort", sortData: { key: string; order: "asc" | "desc" }): void;
 }>();
 
@@ -368,7 +379,7 @@ const defaultStatusColorMap: StatusColorMap = {
   berhasil: { bg: "bg-green-100", text: "text-green-800" },
   gagal: { bg: "bg-red-100", text: "text-red-800" },
   batal: { bg: "bg-orange-300", text: "text-orange-800" },
-  ditolak: { bg: "bg-red-100", text: "text-red-800" },    
+  ditolak: { bg: "bg-red-100", text: "text-red-800" },
 };
 
 // Combine default and custom status color mappings
