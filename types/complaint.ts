@@ -26,4 +26,5 @@ export interface ComplaintFilter {
     status?: string;
     startDate?: string;
     endDate?: string;
+    itemsPerPage?: number;
 }

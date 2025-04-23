@@ -1,3 +1,4 @@
+
 <template>
   <div v-if="totalPages > 1" class="flex justify-between items-center mt-4">
     <div class="text-sm text-muted-foreground">

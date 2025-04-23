@@ -30,12 +30,13 @@ export const useComplaintStore = defineStore("complaint", () => {
     status: '',
     startDate: '',
     endDate: '',
-    itemsPerPage: 5,
+    itemsPerPage: 5, // Default to 10 items per page
   })
 
   // Actions
   const loadComplaints = async () => {
     try {
+      console.log("Loading complaints with filter:", filter.value);
       const result = await fetchComplaints(filter.value)
       return result
     } catch (e) {
@@ -45,17 +46,30 @@ export const useComplaintStore = defineStore("complaint", () => {
   }
 
   const setFilter = async (newFilter: Partial<ComplaintFilter>) => {
+    console.log("Setting filter:", newFilter);
+    
+    // Preserve itemsPerPage if not explicitly changed
+    const itemsPerPage = newFilter.itemsPerPage !== undefined 
+      ? newFilter.itemsPerPage 
+      : filter.value.itemsPerPage;
+    
     filter.value = {
       ...filter.value,
       ...newFilter,
       // Reset to page 1 when filter changes (except when explicitly changing page)
       page: newFilter.page || 1,
+      // Always include itemsPerPage
+      itemsPerPage,
     }
 
+    console.log("Filter after update:", filter.value);
     return await loadComplaints()
   }
 
   const resetFilter = async () => {
+    // Remember the current itemsPerPage value
+    const currentItemsPerPage = filter.value.itemsPerPage;
+    
     filter.value = {
       page: 1,
       complaintId: '',
@@ -65,7 +79,7 @@ export const useComplaintStore = defineStore("complaint", () => {
       status: '',
       startDate: '',
       endDate: '',
-      itemsPerPage: 5,
+      itemsPerPage: currentItemsPerPage, // Preserve the current itemsPerPage
     }
 
     return await loadComplaints()

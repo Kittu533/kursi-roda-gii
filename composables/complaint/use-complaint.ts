@@ -8,11 +8,12 @@ export function useComplaints() {
   // State
   const complaints = ref<Complaint[]>([])
   const selectedComplaint = ref<Complaint | null>(null)
+  const itemsPerPage = ref(10) // Default value, can be changed
   const pagination = ref<ComplaintPagination>({
     currentPage: 1,
     totalPages: 0,
     total: 0,
-    itemsPerPage: 5,
+    itemsPerPage: itemsPerPage.value,
     data: [],
   })
 
