@@ -30,7 +30,7 @@ export const useComplaintStore = defineStore("complaint", () => {
     status: '',
     startDate: '',
     endDate: '',
-    itemsPerPage: 5, // Default to 10 items per page
+    itemsPerPage: 5, 
   })
 
   // Actions

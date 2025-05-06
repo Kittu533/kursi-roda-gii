@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white rounded-lg shadow overflow-hidden">
-    <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+  <div class="bg-white rounded-lg shadow overflow-hidden mt-6">
+    <div class="p-4 bg-[#EFF1EF] border-b flex justify-between items-center">
       <h1 class="text-xl font-semibold text-gray-800">{{ title }}</h1>
 
       <!-- Export dropdown and rows per page selector -->
@@ -12,12 +12,16 @@
             class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white"
             @change="handleRowsPerPageChange"
           >
-            <option v-for="size in rowsPerPageOptions" :key="size" :value="size">
+            <option
+              v-for="size in rowsPerPageOptions"
+              :key="size"
+              :value="size"
+            >
               {{ size }}
             </option>
           </select>
         </div>
-        
+
         <ExportDropdown
           v-if="showExport"
           :columns="exportColumns"
@@ -29,23 +33,25 @@
 
     <div class="overflow-x-auto relative">
       <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+        <thead class="bg-white">
           <tr>
             <!-- Row number column -->
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+            <th
+              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+            >
               No.
             </th>
             <th
-              v-for="header in headers.filter(h => h.key !== 'actions')"
+              v-for="header in headers.filter((h) => h.key !== 'actions')"
               :key="header.key"
               class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               {{ header.label }}
             </th>
             <!-- Pinned action column -->
-            <th 
+            <th
               v-if="hasActionsColumn"
-              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50 shadow-l z-10 w-24"
+              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-white shadow-l z-10 w-24"
             >
               {{ actionsHeader.label }}
             </th>
@@ -62,7 +68,7 @@
               {{ calculateRowNumber(index) }}
             </td>
             <td
-              v-for="header in headers.filter(h => h.key !== 'actions')"
+              v-for="header in headers.filter((h) => h.key !== 'actions')"
               :key="header.key"
               class="px-4 py-3 whitespace-nowrap text-sm"
             >
@@ -103,7 +109,7 @@
               </slot>
             </td>
             <!-- Pinned action column -->
-            <td 
+            <td
               v-if="hasActionsColumn"
               class="px-4 py-3 whitespace-nowrap text-sm sticky right-0 bg-white shadow-l z-10"
             >
@@ -115,7 +121,10 @@
                     @click="handleAction('view', item)"
                     title="View"
                   >
-                    <NuxtIcon name="material-symbols:visibility-rounded" class="h-5 w-5" />
+                    <NuxtIcon
+                      name="material-symbols:visibility-rounded"
+                      class="h-5 w-5"
+                    />
                   </button>
                   <button
                     v-if="showEditAction"
@@ -123,7 +132,10 @@
                     @click="handleAction('edit', item)"
                     title="Edit"
                   >
-                    <NuxtIcon name="material-symbols:edit-square-outline" class="h-5 w-5" />
+                    <NuxtIcon
+                      name="material-symbols:edit-square-outline"
+                      class="h-5 w-5"
+                    />
                   </button>
                   <button
                     v-if="showDeleteAction"
@@ -169,9 +181,13 @@
 
     <!-- New Pagination UI -->
     <div class="px-4 py-3 border-t border-gray-200">
-      <div v-if="showPagination && pagination && totalPages > 1" class="flex justify-between items-center">
+      <div
+        v-if="showPagination && pagination && totalPages > 1"
+        class="flex justify-between items-center"
+      >
         <div class="text-sm text-muted-foreground">
-          Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} entries (Page {{ currentPage }} of {{ totalPages }})
+          Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} entries
+          (Page {{ currentPage }} of {{ totalPages }})
         </div>
 
         <div class="flex space-x-1">
@@ -206,11 +222,15 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="isDeleteModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      v-if="isDeleteModalOpen"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
         <p class="text-gray-600 mb-6">
-          Are you sure you want to delete this item? This action cannot be undone.
+          Are you sure you want to delete this item? This action cannot be
+          undone.
         </p>
         <div class="flex justify-end space-x-3">
           <button
@@ -345,11 +365,18 @@ const props = defineProps({
   },
   defaultRowsPerPage: {
     type: Number,
-    default: 10,
+    default: 5,
   },
 });
 
-const emit = defineEmits(["view", "edit", "delete", "action", "page-change", "rows-per-page-change"]);
+const emit = defineEmits([
+  "view",
+  "edit",
+  "delete",
+  "action",
+  "page-change",
+  "rows-per-page-change",
+]);
 
 // Local state
 const localRowsPerPage = ref(props.defaultRowsPerPage);
@@ -364,36 +391,54 @@ onMounted(() => {
 });
 
 // Watch for changes in pagination from parent
-watch(() => props.pagination?.itemsPerPage, (newValue) => {
-  if (newValue && newValue !== localRowsPerPage.value) {
-    localRowsPerPage.value = newValue;
-  }
-}, { immediate: true });
+watch(
+  () => props.pagination?.itemsPerPage,
+  (newValue) => {
+    if (newValue && newValue !== localRowsPerPage.value) {
+      localRowsPerPage.value = newValue;
+    }
+  },
+  { immediate: true }
+);
 
 // Get current page and total pages from pagination prop
 const currentPage = computed(() => props.pagination?.currentPage || 1);
 const totalPages = computed(() => props.pagination?.totalPages || 1);
-const totalItems = computed(() => props.pagination?.totalItems || props.items.length);
+const totalItems = computed(
+  () => props.pagination?.totalItems || props.items.length
+);
 
 // Calculate start and end items for pagination text
 const startItem = computed(() => {
   if (props.items.length === 0) return 0;
-  return (currentPage.value - 1) * (props.pagination?.itemsPerPage || localRowsPerPage.value) + 1;
+  return (
+    (currentPage.value - 1) *
+      (props.pagination?.itemsPerPage || localRowsPerPage.value) +
+    1
+  );
 });
 
 const endItem = computed(() => {
-  const end = startItem.value + (props.pagination?.itemsPerPage || localRowsPerPage.value) - 1;
+  const end =
+    startItem.value +
+    (props.pagination?.itemsPerPage || localRowsPerPage.value) -
+    1;
   return Math.min(end, totalItems.value);
 });
 
 // Check if we have an actions column
 const hasActionsColumn = computed(() => {
-  return props.headers.some(header => header.key === 'actions');
+  return props.headers.some((header) => header.key === "actions");
 });
 
 // Get the actions header if it exists
 const actionsHeader = computed(() => {
-  return props.headers.find(header => header.key === 'actions') || { key: 'actions', label: 'Actions' };
+  return (
+    props.headers.find((header) => header.key === "actions") || {
+      key: "actions",
+      label: "Actions",
+    }
+  );
 });
 
 // Get pagination range using the helper function
@@ -406,7 +451,7 @@ function calculateRowNumber(index: number): number {
   if (!props.pagination) {
     return index + 1;
   }
-  
+
   const itemsPerPage = props.pagination.itemsPerPage || localRowsPerPage.value;
   return (currentPage.value - 1) * itemsPerPage + index + 1;
 }
@@ -463,36 +508,43 @@ function formatValue(value: TableItemValue, format?: string): string {
   return String(value);
 }
 
+const statusClass: Record<string, { bg: string; text: string }> = {
+  paid: { bg: "bg-green-100", text: "text-green-800" },
+  failed: { bg: "bg-red-100", text: "text-red-800" },
+  refunded: { bg: "bg-gray-100", text: "text-gray-800" },
+  aktif: { bg: "bg-green-100", text: "text-green-800" },
+  nonaktif: { bg: "bg-gray-100", text: "text-gray-800" },
+  dibekukan: { bg: "bg-red-100", text: "text-red-800" },
+  menunggu: { bg: "bg-orange-100", text: "text-orange-800" },
+  perbaikan: { bg: "bg-red-100", text: "text-red-800" },
+  tersedia: { bg: "bg-green-100", text: "text-green-800" },
+  tersewa: { bg: "bg-gray-100", text: "text-gray-800" },
+  expired: { bg: "bg-red-100", text: "text-red-800" },
+  open: { bg: "bg-orange-300", text: "text-orange-800" },
+  forwarded: { bg: "bg-gray-100", text: "text-gray-800" },
+  resolved: { bg: "bg-green-100", text: "text-green-800" },
+  rejected: { bg: "bg-red-100", text: "text-red-800" },
+  tertunda: { bg: "bg-gray-100", text: "text-gray-800" },
+  berhasil: { bg: "bg-green-100", text: "text-green-800" },
+  gagal: { bg: "bg-red-100", text: "text-red-800" },
+  batal: { bg: "bg-orange-300", text: "text-orange-800" },
+  ditolak: { bg: "bg-red-100", text: "text-red-800" },
+};
+
 function getStatusClass(status: TableItemValue): string {
-  if (!props.statusConfig || status === null || status === undefined) {
-    // Default status styling if no config provided
-    const statusStr = String(status).toLowerCase();
-    switch (statusStr) {
-      case "aktif":
-      case "active":
-      case "resolved":
-        return "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800";
-      case "nonaktif":
-      case "inactive":
-      case "rejected":
-        return "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800";
-      case "dibekukan":
-      case "frozen":
-      case "forwarded":
-        return "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800";
-      case "menunggu":
-      case "waiting":
-      case "open":
-        return "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800";
-      default:
-        return "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800";
-    }
+  if (!status) {
+    return "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800";
   }
 
-  return (
-    props.statusConfig[String(status)] ||
-    "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800"
-  );
+  const statusStr = String(status).toLowerCase();
+
+  const classInfo = statusClass[statusStr];
+  if (classInfo) {
+    return `px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${classInfo.bg} ${classInfo.text}`;
+  }
+
+  // fallback default
+  return "px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800";
 }
 
 function handleAction(type: string, item: TableItem): void {
@@ -557,5 +609,37 @@ table {
 
 .text-primary {
   color: #000000;
+}
+
+/* Add these color definitions to ensure status colors are properly loaded */
+.bg-green-100 {
+  background-color: #dcfce7;
+}
+.text-green-800 {
+  color: #166534;
+}
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+.text-red-800 {
+  color: #991b1b;
+}
+.bg-blue-100 {
+  background-color: #dbeafe;
+}
+.text-blue-800 {
+  color: #1e40af;
+}
+.bg-orange-100 {
+  background-color: #ffedd5;
+}
+.text-orange-800 {
+  color: #9a3412;
+}
+.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+.text-gray-800 {
+  color: #1f2937;
 }
 </style>

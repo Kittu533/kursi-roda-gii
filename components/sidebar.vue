@@ -35,11 +35,15 @@
         </span>
       </div>
     </div>
-    
+
     <!-- Navigation - with proper overflow handling -->
     <div class="flex-1 overflow-y-auto overflow-x-hidden py-4">
       <nav class="px-2 flex flex-col gap-4">
-        <div class="space-y-1" v-for="(group, index) in navigation" :key="index">
+        <div
+          v-for="(group, index) in navigation"
+          :key="index"
+          class="space-y-1"
+        >
           <h2
             v-if="isOpen"
             class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1"
@@ -62,12 +66,12 @@
             >
               <NuxtIcon
                 :name="item.NuxtIcon"
-                class="h-5 w-5 flex-shrink-0"
                 :class="{ 'mr-3': isOpen }"
                 v-if="item.NuxtIcon"
+                class="h-5 w-5 flex-shrink-0"
               />
-              <span 
-                v-if="isOpen" 
+              <span
+                v-if="isOpen"
                 class="truncate transition-opacity whitespace-nowrap"
               >
                 {{ item.name }}
@@ -78,7 +82,7 @@
         </div>
       </nav>
     </div>
-    
+
     <!-- Toggle button - only show on tablet and larger -->
     <div
       v-if="showToggle && isTabletOrLarger"
@@ -103,6 +107,10 @@
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 
+defineOptions({
+  name: "AppSidebar",
+});
+
 interface NavigationItem {
   name: string;
   href: string;
@@ -114,7 +122,7 @@ interface NavigationGroup {
   items: NavigationItem[];
 }
 
-const props = defineProps<{
+defineProps<{
   isOpen: boolean;
   showToggle?: boolean;
 }>();
@@ -188,8 +196,8 @@ const navigation: NavigationGroup[] = [
     title: "Produk",
     items: [
       {
-        name: "Kursi Roda",
-        href: "/admin/product",
+        name: "Model",
+        href: "/admin/model-wheelchair",
         NuxtIcon: "ic:baseline-wheelchair-pickup",
       },
       { name: "Voucher", href: "/admin/voucher", NuxtIcon: "heroicons:cube" },
@@ -197,50 +205,51 @@ const navigation: NavigationGroup[] = [
         name: "Paket",
         href: "/admin/packages",
         NuxtIcon: "material-symbols:package-2",
-      },{
-        name: "Maintenance",
+      },
+    ],
+  },
+  
+  {
+    title: "Penilaian",
+    items: [
+      {
+        name: "Penilaian",
+        href: "/admin/evaluation",
+        NuxtIcon: "material-symbols:package-2",
+      },
+    ],
+  },
+  {
+    title: "Pemeliharaan",
+    items: [
+      {
+        name: "Pemeliharaan",
         href: "/admin/maintenance",
         NuxtIcon: "material-symbols:package-2",
       },
     ],
   },
   {
-    title: "Transaksi",
+    title: "Keuangan",
     items: [
       {
-        name: "Pemesanan",
-        href: "/admin/transaction/booking",
+        name: "Transaksi",
+        href: "/admin/transaction",
         NuxtIcon: "heroicons:shopping-cart",
       },
       {
-        name: "Penarikan",
+        name: "Isentif Guide",
         href: "/admin/transaction/withdraw",
         NuxtIcon: "heroicons:arrows-right-left",
       },
-    ],
-  },
-  {
-    title: "Pengembalian",
-    items: [
       {
+        name: "Tarif Guide",
+        href: "/admin/transaction/withdraw",
+        NuxtIcon: "heroicons:arrows-right-left",
+      },{
         name: "Pengembalian",
         href: "/admin/return",
         NuxtIcon: "heroicons:arrows-right-left",
-      },
-      {
-        name: "Pengembalian-Agen",
-        href: "/admin/return-agent",
-        NuxtIcon: "heroicons:arrows-right-left",
-      },
-    ],
-  },
-  {
-    title: "Komplain",
-    items: [
-      {
-        name: "Komplain",
-        href: "/admin/complaint",
-        NuxtIcon: "material-symbols:chat-outline",
       },
     ],
   },
