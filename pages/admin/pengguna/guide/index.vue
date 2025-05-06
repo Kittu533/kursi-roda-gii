@@ -1,16 +1,39 @@
 <template>
-  <div class="space-y-4">
+  <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">Guide</h2>
       </div>
+
       <div class="flex items-center gap-2">
+        <NuxtLink
+          to="/admin/pengguna/guide/create"
+          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
+        >
+          <span>Tambah </span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-plus"
+          >
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+        </NuxtLink>
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
           title="Data Guide"
-          filename="Guide"
+          filename="guide"
         />
+
         <button
           class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
@@ -34,119 +57,153 @@
       </div>
     </div>
 
-    <!-- Filter Panel -->
-    <GuideFilter
+    <!-- Filter -->
+    <DataTableFilter
       v-if="showFilter"
       :filter="filter"
+      :fields="filterFields"
       @apply="applyFilter"
       @reset="resetFilter"
-      @close="showFilter = false"
     />
 
-
-     <!-- Data Table -->
-     <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
-      <div class="p-4 border-b">
-        <h3 class="text-lg font-medium">Data Guide</h3>
-      </div>
-      <div class="p-4">
-        <UiTable
-          :data="guides"
-          :columns="tableColumns"
-          :loading="isLoading"
-          @action="handleAction"
-        />
-
-        <UiPagination
-          v-if="pagination"
-          :current-page="pagination.currentPage"
-          :total-pages="pagination.totalPages"
-          :total="pagination.total"
-          :items-per-page="pagination.itemsPerPage"
-          @page-change="handlePageChange"
-        />
-      </div>
-    </div>
+    <!-- Table -->
+    <data-table
+      title="Data Guide"
+      :headers="columns"
+      :items="guides"
+      :pagination="enhancedPagination"
+      :is-loading="isLoading"
+      :show-export="true"
+      :export-columns="exportColumns"
+      :export-data="exportData"
+      export-filename="guide"
+      :rows-per-page-options="[5, 10, 20, 30, 50, 100]"
+      :default-rows-per-page="itemsPerPage"
+      @action="handleAction"
+      @page-change="handlePageChange"
+      @rows-per-page-change="handleRowsPerPageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useGuideStore } from "~/store/guide";
-import GuideFilter from "~/components/guide/guide-filter.vue";
-import UiTable from "~/components/ui-table.vue";
-import UiPagination from "~/components/ui-pagination.vue";
 import ExportDropdown from "~/components/export-to.vue";
+import DataTableFilter from "~/components/data-table-filter.vue";
 import type { Guide } from "~/types/guide";
+import type {
+  TableHeader,
+  ExportColumn,
+  TablePagination,
+  TableItem,
+} from "~/components/data-table.vue";
 
-// Router and stores
 const router = useRouter();
 const guideStore = useGuideStore();
 
-// State
 const showFilter = ref(false);
+const isLoading = ref(false);
+const itemsPerPage = ref(10);
 
-// Computed
-const guides = computed(() => guideStore.guides);
+onMounted(async () => {
+  await loadData();
+});
+
+const loadData = async () => {
+  isLoading.value = true;
+  try {
+    await guideStore.loadGuides();
+  } catch (error) {
+    console.error("Error loading guides:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const guides = computed<TableItem[]>(() => {
+  return guideStore.guides.map((g) => ({
+    ...g,
+    status: capitalize(g.status),
+  }));
+});
+
 const pagination = computed(() => guideStore.pagination);
 const filter = computed(() => guideStore.filter);
-const isLoading = computed(() => guideStore.isLoading);
 
-// Table columns configuration
-// Table columns configuration
-const tableColumns = [
-  { key: "id", label: "ID Guide", sortable: true },
+const enhancedPagination = computed<TablePagination>(() => {
+  if (!pagination.value) {
+    return {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: guides.value.length,
+      itemsPerPage: itemsPerPage.value,
+    };
+  }
+  return { ...pagination.value, itemsPerPage: itemsPerPage.value };
+});
+
+const columns: TableHeader[] = [
+  { key: "id", label: "ID Guide" },
   {
     key: "photo",
     label: "Foto Profil",
     render: (value: string) => ({
       component: "img",
       src: value,
-      alt: "Profile", 
+      alt: "Profile",
       class: "w-8 h-8 rounded-full object-cover",
     }),
   },
-  { key: "name", label: "Nama Lengkap", sortable: true },
-  { key: "phone", label: "Nomor Telepon", sortable: true },
-  { key: "ktp", label: "KTP", sortable: true },
-  { key: "accountNumber", label: "Nomor Rekening", sortable: true },
-  { key: "createdAt", label: "Akun Dibuat", sortable: true, format: "date" },
-  { key: "status", label: "Status Akun", sortable: true },
-  { key: "actions", label: "Aksi" }
+  { key: "name", label: "Nama Lengkap" },
+  { key: "phone", label: "Nomor Telepon" },
+  { key: "ktp", label: "KTP" },
+  { key: "accountNumber", label: "Nomor Rekening" },
+  { key: "email", label: "Email" },
+  { key: "status", label: "Status Akun" },
+  { key: "actions", label: "Aksi" },
 ];
 
-// Export columns configuration 
-const exportColumns = computed(() => {
-  return [
-    { key: "id", header: "ID Guide" },
-    { key: "name", header: "Nama Lengkap" },
-    { key: "phone", header: "Nomor Telepon" },
-    { key: "ktp", header: "KTP" },
-    { key: "accountNumber", header: "Nomor Rekening" },
-    { key: "createdAt", header: "Akun Dibuat" },
-    { key: "status", header: "Status Akun" }
-  ];
-});
+const exportColumns = computed<ExportColumn[]>(() => [
+  { key: "id", header: "ID Guide" },
+  { key: "name", header: "Nama Lengkap" },
+  { key: "email", header: "Email" },
+  { key: "phone", header: "Nomor Telepon" },
+  { key: "ktp", header: "KTP" },
+  { key: "accountNumber", header: "Nomor Rekening" },
+  { key: "status", header: "Status Akun" },
+]);
 
-// Export data formatting
-const exportData = computed(() => {
-  return guides.value.map(guide => {
-    const exportGuide = { ...guide };
-    if (exportGuide.status) {
-      exportGuide.status = exportGuide.status.charAt(0).toUpperCase() + exportGuide.status.slice(1);
-    }
-    return exportGuide;
+const exportData = computed(() => guides.value);
+
+// Filter config
+const filterFields = [
+  {
+    key: "name",
+    label: "Nama",
+    type: "text",
+  },
+  {
+    key: "status",
+    label: "Status",
+    type: "select",
+    options: ["aktif", "nonaktif", "menunggu", "dibatalkan"],
+  },
+];
+
+const applyFilter = (newFilter: Partial<Record<string, any>>) => {
+  guideStore.setFilter({
+    ...filter.value,
+    ...newFilter,
+    page: 1,
+    itemsPerPage: itemsPerPage.value,
   });
-});
-
-// Methods
-const applyFilter = (newFilter) => {
-  guideStore.setFilter(newFilter);
 };
 
 const resetFilter = () => {
   guideStore.resetFilter();
+  guideStore.setFilter({ itemsPerPage: itemsPerPage.value });
   showFilter.value = false;
 };
 
@@ -154,20 +211,23 @@ const handlePageChange = (page: number) => {
   guideStore.setFilter({ ...filter.value, page });
 };
 
-const handleAction = async ({ type, row }: { type: string; row: Guide }) => {
-  const guide = row;
+const handleRowsPerPageChange = (size: number) => {
+  itemsPerPage.value = size;
+  guideStore.setFilter({ page: 1, itemsPerPage: size });
+};
 
+const handleAction = async ({ type, row }: { type: string; row: Guide }) => {
   switch (type) {
     case "view":
-      await router.push(`/admin/pengguna/guide/${guide.id}`);
+      await router.push(`/admin/pengguna/guide/${row.id}`);
       break;
     case "edit":
-      await router.push(`/admin/pengguna/guide/${guide.id}/edit`);
+      await router.push(`/admin/pengguna/guide/${row.id}/edit`);
       break;
     case "delete":
-      if (confirm(`Apakah anda yakin ingin menghapus ${guide.name}?`)) {
+      if (confirm(`Apakah anda yakin ingin menghapus ${row.name}?`)) {
         try {
-          await guideStore.deleteGuide(guide.id);
+          await guideStore.deleteGuide(row.id);
         } catch (error) {
           console.error("Error deleting guide:", error);
         }
@@ -176,12 +236,6 @@ const handleAction = async ({ type, row }: { type: string; row: Guide }) => {
   }
 };
 
-// Lifecycle
-onMounted(async () => {
-  try {
-    await guideStore.loadGuides();
-  } catch (error) {
-    console.error("Error loading guides:", error);
-  }
-});
+const capitalize = (val: string): string =>
+  val.charAt(0).toUpperCase() + val.slice(1);
 </script>

@@ -201,7 +201,7 @@ export function useComplaintApi() {
     }
 
     const page = filter?.page || 1
-    const itemsPerPage = filter?.itemsPerPage || 10
+    const itemsPerPage = filter?.itemsPerPage || 5
     const total = filtered.length
     const totalPages = Math.ceil(total / itemsPerPage)
     const start = (page - 1) * itemsPerPage

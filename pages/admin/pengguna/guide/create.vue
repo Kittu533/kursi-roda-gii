@@ -22,7 +22,6 @@
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
       </NuxtLink>
-
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -37,27 +36,9 @@
       >
         <path d="m9 18 6-6-6-6" />
       </svg>
-      <NuxtLink
-        to="/admin/model-wheelchair"
-        class="flex  items-center justify-between text-muted-foreground hover:text-foreground"
-      >
-        <span>Model</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-chevron-right text-muted-foreground"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
-      </NuxtLink>
-      <span>Produk</span>
+    <NuxtLink to="/admin/pengguna/guide" >
+      Guide
+    </NuxtLink>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -76,68 +57,79 @@
     </div>
 
     <!-- Form Container -->
-    <h1 class="text-xl font-bold mb-4">Data Produk Baru</h1>
-    <!-- Form Produk -->
+    <h1 class="text-xl font-bold mb-4">Data Guide Baru</h1>
+
     <form
       @submit.prevent="handleSubmit"
       class="bg-white rounded-md p-4 space-y-4"
     >
-      <!-- Nama Produk -->
+      <!-- ID Guide -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <label class="text-sm font-medium">Nama Produk</label>
+        <label class="text-sm font-medium">ID Guide</label>
         <input
-          v-model="formData.nama"
+          v-model="formData.idGuide"
           type="text"
           class="md:col-span-3 border rounded-md px-3 py-2 w-full"
         />
       </div>
 
-      <!-- ID Produk -->
+      <!-- Nama Lengkap -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <label class="text-sm font-medium">ID Produk</label>
+        <label class="text-sm font-medium">Nama Lengkap</label>
         <input
-          v-model="formData.idProduk"
+          v-model="formData.namaLengkap"
           type="text"
           class="md:col-span-3 border rounded-md px-3 py-2 w-full"
         />
       </div>
 
-      <!-- ID Agen -->
+      <!-- Foto Profil -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <label class="text-sm font-medium">ID Agen</label>
+        <label class="text-sm font-medium">Foto Profil</label>
         <input
-          v-model="formData.idAgen"
-          type="text"
-          class="md:col-span-3 border rounded-md px-3 py-2 w-full"
-        />
-      </div>
-
-      <!-- Foto Produk -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <label class="text-sm font-medium">Foto Produk</label>
-        <input
-          @change="handleFileUpload($event, 'fotoProduk')"
+          @change="handleFileUpload($event, 'fotoProfil')"
           type="file"
           accept="image/*"
           class="md:col-span-3 border rounded-md px-3 py-2 w-full"
         />
       </div>
 
-      <!-- Nomor Seri -->
+      <!-- Nomor Telepon -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <label class="text-sm font-medium">Nomor Seri</label>
+        <label class="text-sm font-medium">Nomor Telepon</label>
         <input
-          v-model="formData.nomorSeri"
+          v-model="formData.nomorTelepon"
+          type="tel"
+          class="md:col-span-3 border rounded-md px-3 py-2 w-full"
+        />
+      </div>
+
+      <!-- Email -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        <label class="text-sm font-medium">Email</label>
+        <input
+          v-model="formData.email"
+          type="email"
+          class="md:col-span-3 border rounded-md px-3 py-2 w-full"
+        />
+      </div>
+
+      <!-- KTP -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        <label class="text-sm font-medium">Nomor KTP</label>
+        <input
+          v-model="formData.nomoKTP"
           type="text"
           class="md:col-span-3 border rounded-md px-3 py-2 w-full"
         />
       </div>
 
-      <!-- Model -->
+
+      <!-- Nomor Rekening -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <label class="text-sm font-medium">Model</label>
+        <label class="text-sm font-medium">Nomor Rekening</label>
         <input
-          v-model="formData.model"
+          v-model="formData.nomorRekening"
           type="text"
           class="md:col-span-3 border rounded-md px-3 py-2 w-full"
         />
@@ -155,12 +147,14 @@
           <option value="nonaktif">Nonaktif</option>
         </select>
       </div>
+
+      <!-- Tombol Submit -->
     </form>
 
-    <!-- Tombol Simpan -->
-    <div class="flex justify-end">
+    <!-- Save Button -->
+    <div class="flex justify-end mt-4">
       <button
-        type="submit"
+      type="submit"
         class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
       >
         Simpan
@@ -171,22 +165,6 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-
-interface ProductForm {
-  nama: string;
-  idProduk: string;
-  idAgen: string;
-  fotoProduk: File | null;
-  nomorSeri: string;
-  model: string;
-  kapasitasBerat: string;
-  kapasitasBaterai: string;
-  status: "aktif" | "nonaktif" | "";
-  terakhirPerbaikan: string;
-  tanggalDibuat: string;
-  terakhirDiperbarui: string;
-}
-
 const formData = ref<ProductForm>({
   nama: "",
   idProduk: "",
@@ -201,13 +179,4 @@ const formData = ref<ProductForm>({
   tanggalDibuat: "",
   terakhirDiperbarui: "",
 });
-
-const saveProduct = async (): Promise<void> => {
-  try {
-    // Logic to save product
-    console.log("Saving product:", formData.value);
-  } catch (error) {
-    console.error("Error saving product:", error);
-  }
-};
 </script>

@@ -1,19 +1,38 @@
 <template>
-  <div class="space-y-4">
+  <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">Pelanggan</h2>
       </div>
-      
+
       <div class="flex items-center gap-2">
-        <!-- Komponen ExportDropdown -->
+        <NuxtLink
+          to="/admin/pengguna/pelanggan/create"
+          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
+        >
+          <span>Tambah </span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-plus"
+          >
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+        </NuxtLink>
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
           title="Data Pelanggan"
           filename="pelanggan"
         />
-        
         <button
           class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
@@ -37,151 +56,179 @@
       </div>
     </div>
 
-    <!-- Filter Panel -->
-    <CustomerFilter
+    <DataTableFilter
       v-if="showFilter"
       :filter="filter"
+      :fields="filterFields"
       @apply="applyFilter"
       @reset="resetFilter"
-      @close="showFilter = false"
     />
 
-    <!-- Data Table -->
-    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
-      <div class="p-4 border-b">
-        <h3 class="text-lg font-medium">Data Pelanggan</h3>
-      </div>
-      <div class="p-4">
-        <UiTable
-          :data="customers"
-          :columns="tableColumns"
-          :loading="isLoading"
-          @action="handleAction"
-        />
-
-        <UiPagination
-          v-if="pagination"
-          :current-page="pagination.currentPage"
-          :total-pages="pagination.totalPages"
-          :total="pagination.total"
-          :items-per-page="pagination.itemsPerPage"
-          @page-change="handlePageChange"
-        />
-      </div>
-    </div>
+    <data-table
+      title="Data Pelanggan"
+      :headers="columns"
+      :items="customers"
+      :pagination="enhancedPagination"
+      :is-loading="isLoading"
+      :show-export="true"
+      :export-columns="exportColumns"
+      :export-data="exportData"
+      export-filename="pelanggan"
+      :rows-per-page-options="[5, 10, 20, 30, 50, 100]"
+      :default-rows-per-page="itemsPerPage"
+      @action="handleAction"
+      @page-change="handlePageChange"
+      @rows-per-page-change="handleRowsPerPageChange"
+    />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useCustomerStore } from "~/store/customer";
-import CustomerFilter from "~/components/customer/customer-filter.vue";
-import UiTable from "~/components/ui-table.vue";
-import UiPagination from "~/components/ui-pagination.vue";
 import ExportDropdown from "~/components/export-to.vue";
+import type {
+  Customer,
+  CustomerFilter as ICustomerFilter,
+} from "~/types/customer";
+import type {
+  TableHeader,
+  ExportColumn,
+  TablePagination,
+  TableItem,
+} from "~/components/data-table.vue";
+import DataTableFilter from "~/components/data-table-filter.vue";
 
-// Router and stores
 const router = useRouter();
 const customerStore = useCustomerStore();
+
 // State
 const showFilter = ref(false);
+const isLoading = ref(false);
+const itemsPerPage = ref(10);
 
-// Computed
-const customers = computed(() => customerStore.customers);
-const pagination = computed(() => customerStore.pagination);
-const filter = computed(() => customerStore.filter);
-const isLoading = computed(() => customerStore.isLoading);
-
-// Table columns configuration for TanStack Table
-const tableColumns = [
-  {key :"id", label: "ID Pelanggan", sortable: true, format: "number"},
-  { key: "name", label: "Nama Lengkap", sortable: true },
-  { key: "phone", label: "Nomor Telepon", sortable: true, 
-    format: (value, row) => `${row.phoneCode}${value}` },
-  { key: "email", label: "Alamat Email", sortable: true },
-  { key: "gender", label: "Jenis Kelamin", sortable: true,
-    format: (value) => value.charAt(0).toUpperCase() + value.slice(1) },
-  { key: "registerDate", label: "Akun Dibuat", sortable: true, format: "date" },
-  { key: "lastLogin", label: "Akun Diperbarui", sortable: true, format: "date" },
-  { key: "status", label: "Status Akun", sortable: true,
-    format: (value) => value.charAt(0).toUpperCase() + value.slice(1) },
-  { key: "actions", label: "Aksi" }
-];
-
-// Kolom untuk export (tanpa kolom aksi)
-const exportColumns = computed(() => {
-  return [
-    { key: "id", header: "ID Pelanggan" },
-    { key: "name", header: "Nama Lengkap" },
-    { key: "phone", header: "Nomor Telepon" },
-    { key: "email", header: "Alamat Email" },
-    { key: "gender", header: "Jenis Kelamin" },
-    { key: "registerDate", header: "Akun Dibuat" },
-    { key: "lastLogin", header: "Akun Diperbarui" },
-    { key: "status", header: "Status Akun" }
-  ];
-});
-
-// Data untuk export (format data untuk export)
-const exportData = computed(() => {
-  return customers.value.map(customer => {
-    // Buat salinan data customer untuk export
-    const exportCustomer = { ...customer };
-    
-    // Format status jika diperlukan
-    if (exportCustomer.status) {
-      exportCustomer.status = exportCustomer.status.charAt(0).toUpperCase() + exportCustomer.status.slice(1);
-    }
-    
-    return exportCustomer;
-  });
-});
-
-// Methods
-const applyFilter = (newFilter) => {
-  customerStore.setFilter(newFilter);
-};
-
-const resetFilter = () => {
-  customerStore.resetFilter();
-  showFilter.value = false;
-};
-
-const handlePageChange = (page) => {
-  customerStore.setFilter({ ...filter.value, page });
-};
-
-// Handler untuk action dari TanStack Table
-const handleAction = (action) => {
-  const { type, row } = action;
-  const customer = row;
-
-  switch (type) {
-    case "view":
-      router.push(`/admin/pengguna/pelanggan/${customer.id}`);
-      break;
-    case "edit":
-      router.push(`/admin/pengguna/pelanggan/${customer.id}/edit`);
-      break;
-    case "delete":
-      if (confirm(`Apakah anda yakin ingin menghapus ${customer.name}?`)) {
-        try {
-          customerStore.deleteCustomer(customer.id);
-        } catch (error) {
-          console.error("Error deleting customer:", error);
-        }
-      }
-      break;
-  }
-};
-
-// Lifecycle
+// Fetch data on mount
 onMounted(async () => {
+  await loadData();
+});
+
+// Load data
+const loadData = async () => {
+  isLoading.value = true;
   try {
     await customerStore.loadCustomers();
   } catch (error) {
     console.error("Error loading customers:", error);
+  } finally {
+    isLoading.value = false;
   }
+};
+
+// Computed
+const customers = computed<TableItem[]>(() => {
+  return customerStore.customers.map((c) => ({
+    ...c,
+    phone: `${(c as any).phoneCode ?? ""}${c.phone}`,
+    gender: capitalize(c.gender),
+    status: capitalize(c.status),
+  }));
 });
+
+const pagination = computed(() => customerStore.pagination);
+const filter = computed(() => customerStore.filter);
+
+const enhancedPagination = computed<TablePagination>(() => {
+  if (!pagination.value) {
+    return {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: customers.value.length,
+      itemsPerPage: itemsPerPage.value,
+    };
+  }
+  return { ...pagination.value, itemsPerPage: itemsPerPage.value };
+});
+
+// Columns
+const columns: TableHeader[] = [
+  { key: "id", label: "ID Pelanggan" },
+  { key: "name", label: "Nama Lengkap" },
+  { key: "phone", label: "Nomor Telepon" },
+  { key: "email", label: "Alamat Email" },
+  { key: "gender", label: "Jenis Kelamin" },
+  { key: "status", label: "Status Akun" },
+  { key: "actions", label: "Aksi" },
+];
+
+// Export columns & data
+const exportColumns = computed<ExportColumn[]>(() => [
+  { key: "id", header: "ID Pelanggan" },
+  { key: "name", header: "Nama Lengkap" },
+  { key: "phone", header: "Nomor Telepon" },
+  { key: "email", header: "Alamat Email" },
+  { key: "gender", header: "Jenis Kelamin" },
+  { key: "status", header: "Status Akun" },
+]);
+
+const exportData = computed(() => customers.value);
+
+// Handler
+const applyFilter = (newFilter: Partial<ICustomerFilter>) => {
+  customerStore.setFilter({
+    ...filter.value,
+    ...newFilter,
+    page: 1,
+    itemsPerPage: itemsPerPage.value,
+  });
+};
+
+
+const resetFilter = () => {
+  customerStore.resetFilter();
+  customerStore.setFilter({ itemsPerPage: itemsPerPage.value });
+  showFilter.value = false;
+};
+
+const handlePageChange = (page: number) => {
+  customerStore.setFilter({ ...filter.value, page });
+};
+
+const handleRowsPerPageChange = (size: number) => {
+  itemsPerPage.value = size;
+  customerStore.setFilter({ page: 1, itemsPerPage: size });
+};
+
+const handleAction = ({ type, row }: { type: string; row: Customer }) => {
+  switch (type) {
+    case "view":
+      router.push(`/admin/pengguna/pelanggan/${row.id}`);
+      break;
+    case "edit":
+      router.push(`/admin/pengguna/pelanggan/${row.id}/edit`);
+      break;
+    case "delete":
+      if (confirm(`Apakah Anda yakin ingin menghapus ${row.name}?`)) {
+        customerStore.deleteCustomer(row.id);
+      }
+      break;
+  }
+};
+const filterFields = [
+  {
+    key: "name",
+    label: "Nama",
+    type: "text",
+  },
+  {
+    key: "status",
+    label: "Status",
+    type: "select",
+    options: ["aktif", "nonaktif", "menunggu", "dibatalkan"],
+  },
+];
+
+// Util
+const capitalize = (val: string): string =>
+  val.charAt(0).toUpperCase() + val.slice(1);
 </script>

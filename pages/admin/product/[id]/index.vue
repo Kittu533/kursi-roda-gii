@@ -42,13 +42,8 @@ const fields = [
   { key: 'productName', label: 'Nama Produk' },
   { key: 'photo', label: 'Foto', type: 'image' },
   { key: 'model', label: 'Model' },
-  { key: 'maxWeight', label: 'Kapasitas Berat' },
-  { key: 'stock', label: 'Stok', formatter: (value) => `${value} item` },
-  { key: 'batteryLife', label: 'Daya Baterai' },
   { key: 'status', label: 'Status', type: 'status' },
-  { key: 'lastRented', label: 'Terakhir Disewa' },
-  { key: 'createdAt', label: 'Tanggal Dibuat' },
-  { key: 'updatedAt', label: 'Terakhir Diperbaharui' }
+  {key:'Tanggal Pemeliharaan',label:'Tanggal Pemeliharaan'}
 ]
 
 // Lifecycle
