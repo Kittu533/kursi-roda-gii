@@ -2,12 +2,12 @@
   <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight">Guide</h2>
+        <h2 class="text-2xl font-bold tracking-tight">Pelanggan</h2>
       </div>
 
       <div class="flex items-center gap-2">
         <NuxtLink
-          to="/admin/pengguna/guide/create"
+          to="/admin/pengguna/pelanggan/create"
           class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
         >
           <span>Tambah </span>
@@ -30,10 +30,9 @@
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
-          title="Data Guide"
-          filename="guide"
+          title="Data Pelanggan"
+          filename="pelanggan"
         />
-
         <button
           class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
@@ -57,7 +56,6 @@
       </div>
     </div>
 
-    <!-- Filter -->
     <DataTableFilter
       v-if="showFilter"
       :filter="filter"
@@ -66,17 +64,16 @@
       @reset="resetFilter"
     />
 
-    <!-- Table -->
     <data-table
-      title="Data Guide"
+      title="Data Pelanggan"
       :headers="columns"
-      :items="guides"
+      :items="customers"
       :pagination="enhancedPagination"
       :is-loading="isLoading"
       :show-export="true"
       :export-columns="exportColumns"
       :export-data="exportData"
-      export-filename="guide"
+      export-filename="pelanggan"
       :rows-per-page-options="[5, 10, 20, 30, 50, 100]"
       :default-rows-per-page="itemsPerPage"
       @action="handleAction"
@@ -89,95 +86,141 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useGuideStore } from "~/store/guide";
+import { useCustomerStore } from "~/store/customer";
 import ExportDropdown from "~/components/export-to.vue";
-import DataTableFilter from "~/components/data-table-filter.vue";
-import type { Guide } from "~/types/guide";
+import type {
+  Customer,
+  CustomerFilter as ICustomerFilter,
+} from "~/types/customer";
 import type {
   TableHeader,
   ExportColumn,
   TablePagination,
   TableItem,
 } from "~/components/data-table.vue";
+import DataTableFilter from "~/components/data-table-filter.vue";
 
 const router = useRouter();
-const guideStore = useGuideStore();
+const customerStore = useCustomerStore();
 
+// State
 const showFilter = ref(false);
 const isLoading = ref(false);
 const itemsPerPage = ref(10);
 
+// Fetch data on mount
 onMounted(async () => {
   await loadData();
 });
 
+// Load data
 const loadData = async () => {
   isLoading.value = true;
   try {
-    await guideStore.loadGuides();
+    await customerStore.loadCustomers();
   } catch (error) {
-    console.error("Error loading guides:", error);
+    console.error("Error loading customers:", error);
   } finally {
     isLoading.value = false;
   }
 };
 
-const guides = computed<TableItem[]>(() => {
-  return guideStore.guides.map((g) => ({
-    ...g,
-    status: capitalize(g.status),
-  }));
-});
+// Computed
+const customers = computed<TableItem[]>(() => {
+  return customerStore.customers.map((c) => ({
+    ...c,
+    name: c.full_name,
+    phone: c.phone,
+    gender: capitalize(c.gender),
+    status: capitalize(c.status?.status || '')
+  }))
+})
 
-const pagination = computed(() => guideStore.pagination);
-const filter = computed(() => guideStore.filter);
+
+const pagination = computed(() => customerStore.pagination);
+const filter = computed(() => customerStore.filter);
 
 const enhancedPagination = computed<TablePagination>(() => {
   if (!pagination.value) {
     return {
       currentPage: 1,
       totalPages: 1,
-      totalItems: guides.value.length,
+      totalItems: customers.value.length,
       itemsPerPage: itemsPerPage.value,
     };
   }
   return { ...pagination.value, itemsPerPage: itemsPerPage.value };
 });
 
+// Columns
 const columns: TableHeader[] = [
-  { key: "id", label: "ID Guide" },
-  {
-    key: "photo",
-    label: "Foto Profil",
-    render: (value: string) => ({
-      component: "img",
-      src: value,
-      alt: "Profile",
-      class: "w-8 h-8 rounded-full object-cover",
-    }),
-  },
+  { key: "id", label: "ID Pelanggan" },
   { key: "name", label: "Nama Lengkap" },
   { key: "phone", label: "Nomor Telepon" },
-  { key: "ktp", label: "KTP" },
-  { key: "accountNumber", label: "Nomor Rekening" },
-  { key: "email", label: "Email" },
+  { key: "email", label: "Alamat Email" },
+  { key: "gender", label: "Jenis Kelamin" },
   { key: "status", label: "Status Akun" },
   { key: "actions", label: "Aksi" },
 ];
 
+// Export columns & data
 const exportColumns = computed<ExportColumn[]>(() => [
-  { key: "id", header: "ID Guide" },
+  { key: "id", header: "ID Pelanggan" },
   { key: "name", header: "Nama Lengkap" },
-  { key: "email", header: "Email" },
   { key: "phone", header: "Nomor Telepon" },
-  { key: "ktp", header: "KTP" },
-  { key: "accountNumber", header: "Nomor Rekening" },
+  { key: "email", header: "Alamat Email" },
+  { key: "gender", header: "Jenis Kelamin" },
   { key: "status", header: "Status Akun" },
 ]);
 
-const exportData = computed(() => guides.value);
+const exportData = computed(() => customers.value);
 
-// Filter config
+// Handler
+const applyFilter = (newFilter: Partial<ICustomerFilter>) => {
+  customerStore.setFilter({
+    ...filter.value,
+    ...newFilter,
+    page: 1,
+    itemsPerPage: itemsPerPage.value,
+  });
+};
+
+
+const resetFilter = () => {
+  customerStore.resetFilter();
+  customerStore.setFilter({ itemsPerPage: itemsPerPage.value });
+  showFilter.value = false;
+};
+
+const handlePageChange = (page: number) => {
+  customerStore.setFilter({ ...filter.value, page });
+};
+
+const handleRowsPerPageChange = (size: number) => {
+  itemsPerPage.value = size;
+  customerStore.setFilter({ page: 1, itemsPerPage: size });
+};
+
+const handleAction = async ({ type, row }: { type: string; row: Customer }) => {
+  try {
+    switch (type) {
+      case "view":
+        await router.push(`/admin/pengguna/pelanggan/${row.id}`);
+        break;
+      case "edit":
+        await router.push(`/admin/pengguna/pelanggan/${row.id}/edit`);
+        break;
+      case "delete":
+        if (confirm(`Apakah Anda yakin ingin menghapus ${row.name}?`)) {
+          await customerStore.deleteCustomer(row.id);
+        }
+        break;
+    }
+  } catch (error) {
+    console.error('Error handling action:', error);
+    alert('Terjadi kesalahan saat memproses aksi');
+  }
+};
 const filterFields = [
   {
     key: "name",
@@ -192,50 +235,7 @@ const filterFields = [
   },
 ];
 
-const applyFilter = (newFilter: Partial<Record<string, any>>) => {
-  guideStore.setFilter({
-    ...filter.value,
-    ...newFilter,
-    page: 1,
-    itemsPerPage: itemsPerPage.value,
-  });
-};
-
-const resetFilter = () => {
-  guideStore.resetFilter();
-  guideStore.setFilter({ itemsPerPage: itemsPerPage.value });
-  showFilter.value = false;
-};
-
-const handlePageChange = (page: number) => {
-  guideStore.setFilter({ ...filter.value, page });
-};
-
-const handleRowsPerPageChange = (size: number) => {
-  itemsPerPage.value = size;
-  guideStore.setFilter({ page: 1, itemsPerPage: size });
-};
-
-const handleAction = async ({ type, row }: { type: string; row: Guide }) => {
-  switch (type) {
-    case "view":
-      await router.push(`/admin/pengguna/guide/${row.id}`);
-      break;
-    case "edit":
-      await router.push(`/admin/pengguna/guide/${row.id}/edit`);
-      break;
-    case "delete":
-      if (confirm(`Apakah anda yakin ingin menghapus ${row.name}?`)) {
-        try {
-          await guideStore.deleteGuide(row.id);
-        } catch (error) {
-          console.error("Error deleting guide:", error);
-        }
-      }
-      break;
-  }
-};
-
+// Util
 const capitalize = (val: string): string =>
   val.charAt(0).toUpperCase() + val.slice(1);
 </script>

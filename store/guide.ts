@@ -1,121 +1,169 @@
-import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import type { Guide, GuideFilter } from "~/types/guide"
-import { useGuides } from "~/composables/guide/use-guide"
-import { useNotification } from "~/composables/use-notification"
+import { defineStore } from 'pinia'
+import {
+  fetchGuides,
+  getGuideById,
+  createGuide,
+  updateGuide,
+  deleteGuide
+} from '@/composables/consume-api/guide.api'
+import { useApi } from '@/composables/use-fetch-api'
+import type {
+  Guide,
+  CreateGuidePayload,
+  GuideFilter,
+  GuidePagination
+} from '~/types/guide'
 
-export const useGuideStore = defineStore("guide", () => {
-    // Composables
-    const {
-        guides: guidesRef,
-        selectedGuide: selectedGuideRef,
-        pagination: paginationRef,
-        isLoading,
-        error,
-        fetchGuides,
-        fetchGuideById,
-        saveGuide,
-        removeGuide,
-    } = useGuides()
+interface GuideStoreState {
+  guides: Guide[]
+  pagination: GuidePagination | null
+  filter: GuideFilter
+  selectedGuide: Guide | null
+  isLoading: boolean
+  error: string | null
+}
 
-    const notification = useNotification()
+export const useGuideStore = defineStore('guide', {
+  state: (): GuideStoreState => ({
+    guides: [],
+    pagination: null,
+    filter: {
+      status: '',
+      date: '',
+      page: 1,
+      itemsPerPage: 5
+    },
+    selectedGuide: null,
+    isLoading: false,
+    error: null
+  }),
 
-    // State
-    const filter = ref<GuideFilter>({
-        status: "",
-        date: "",
+  actions: {
+    async loadGuides(): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const res = await fetchGuides(this.filter)
+        this.guides = res.response.records
+
+        this.pagination = {
+          currentPage: res.response.page.batch_number,
+          total: res.response.page.total_record_count,
+          totalPages: Math.ceil(res.response.page.total_record_count / res.response.page.batch_size),
+          itemsPerPage: res.response.page.batch_size,
+          data: res.response.records
+        }
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to load guides'
+        console.error('Error loading guides:', error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async getGuideDetail(id: string): Promise<Guide | null> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const response = await getGuideById(id)
+        this.selectedGuide = response.response
+        return this.selectedGuide
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to get guide details'
+        console.error('Error getting guide details:', error)
+        return null
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    clearSelectedGuide(): void {
+      this.selectedGuide = null
+    },
+
+    setFilter(filter: Partial<GuideFilter>): void {
+      this.filter = { ...this.filter, ...filter }
+      this.loadGuides()
+    },
+
+    resetFilter(): void {
+      this.filter = {
+        status: '',
+        date: '',
         page: 1,
-        itemsPerPage: 5,
-    })
+        itemsPerPage: 5
+      }
+      this.loadGuides()
+    },
 
-    // Actions
-    const loadGuides = async () => {
-        try {
-            const result = await fetchGuides(filter.value)
-            return result
-        } catch (e) {
-            notification.error("Failed to load guides")
-            throw e
+    async createNewGuide(data: CreateGuidePayload): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const result = await createGuide(data)
+        await this.loadGuides()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to create guide'
+        console.error('Error creating guide:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async createGuideRaw(payload: CreateGuidePayload): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const result = await useApi('/guides', {
+          method: 'POST',
+          body: payload
+        })
+        await this.loadGuides()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to create guide'
+        console.error('Error creating guide (raw):', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updateGuide(id: string, data: Partial<Guide>): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const result = await updateGuide(id, data)
+        if (this.selectedGuide?.id === id) {
+          await this.getGuideDetail(id)
         }
+        await this.loadGuides()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to update guide'
+        console.error('Error updating guide:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async deleteGuide(id: string): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+        await deleteGuide(id)
+        this.guides = this.guides.filter(g => g.id !== id)
+        if (this.selectedGuide?.id === id) this.clearSelectedGuide()
+        await this.loadGuides()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to delete guide'
+        console.error('Error deleting guide:', error)
+      } finally {
+        this.isLoading = false
+      }
     }
-
-    const setFilter = async (newFilter: Partial<GuideFilter>) => {
-        filter.value = {
-            ...filter.value,
-            ...newFilter,
-            // Reset to page 1 when filter changes (except when explicitly changing page)
-            page: newFilter.page || 1,
-        }
-
-        return await loadGuides()
-    }
-
-    const resetFilter = async () => {
-        filter.value = {
-            status: "",
-            date: "",
-            page: 1,
-            itemsPerPage: 5,
-        }
-
-        return await loadGuides()
-    }
-
-    const loadGuideDetails = async (id: string) => {
-        try {
-            return await fetchGuideById(id)
-        } catch (e) {
-            notification.error("Failed to load guide details")
-            throw e
-        }
-    }
-
-    const updateGuide = async (id: string, guideData: Partial<Guide>) => {
-        try {
-            const result = await saveGuide({ id, ...guideData })
-            notification.success("Guide updated successfully")
-            return result
-        } catch (e) {
-            notification.error("Failed to update guide")
-            throw e
-        }
-    }
-
-    const deleteGuide = async (id: string) => {
-        try {
-            const result = await removeGuide(id)
-            if (result) {
-                notification.success("Guide deleted successfully")
-                await loadGuides()
-            }
-            return result
-        } catch (e) {
-            notification.error("Failed to delete guide")
-            throw e
-        }
-    }
-
-    // Getters
-    const guides = computed(() => guidesRef.value)
-    const selectedGuide = computed(() => selectedGuideRef.value)
-    const pagination = computed(() => paginationRef.value)
-
-    return {
-        // State
-        filter,
-        guides,
-        selectedGuide,
-        pagination,
-        isLoading,
-        error,
-
-        // Actions
-        loadGuides,
-        setFilter,
-        resetFilter,
-        loadGuideDetails,
-        updateGuide,
-        deleteGuide,
-    }
+  }
 })
-

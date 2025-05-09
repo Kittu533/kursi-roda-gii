@@ -129,11 +129,13 @@ const loadData = async () => {
 const customers = computed<TableItem[]>(() => {
   return customerStore.customers.map((c) => ({
     ...c,
-    phone: `${(c as any).phoneCode ?? ""}${c.phone}`,
+    name: c.full_name,
+    phone: c.phone,
     gender: capitalize(c.gender),
-    status: capitalize(c.status),
-  }));
-});
+    status: capitalize(c.status?.status || '')
+  }))
+})
+
 
 const pagination = computed(() => customerStore.pagination);
 const filter = computed(() => customerStore.filter);
@@ -199,19 +201,24 @@ const handleRowsPerPageChange = (size: number) => {
   customerStore.setFilter({ page: 1, itemsPerPage: size });
 };
 
-const handleAction = ({ type, row }: { type: string; row: Customer }) => {
-  switch (type) {
-    case "view":
-      router.push(`/admin/pengguna/pelanggan/${row.id}`);
-      break;
-    case "edit":
-      router.push(`/admin/pengguna/pelanggan/${row.id}/edit`);
-      break;
-    case "delete":
-      if (confirm(`Apakah Anda yakin ingin menghapus ${row.name}?`)) {
-        customerStore.deleteCustomer(row.id);
-      }
-      break;
+const handleAction = async ({ type, row }: { type: string; row: Customer }) => {
+  try {
+    switch (type) {
+      case "view":
+        await router.push(`/admin/pengguna/pelanggan/${row.id}`);
+        break;
+      case "edit":
+        await router.push(`/admin/pengguna/pelanggan/${row.id}/edit`);
+        break;
+      case "delete":
+        if (confirm(`Apakah Anda yakin ingin menghapus ${row.name}?`)) {
+          await customerStore.deleteCustomer(row.id);
+        }
+        break;
+    }
+  } catch (error) {
+    console.error('Error handling action:', error);
+    alert('Terjadi kesalahan saat memproses aksi');
   }
 };
 const filterFields = [

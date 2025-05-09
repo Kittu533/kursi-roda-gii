@@ -1,27 +1,54 @@
 export interface Customer {
   id: string
-  name: string
-  phone: string
+  full_name: string
   email: string
+  phone: string
   gender: string
-  registerDate: string
-  lastLogin: string
+  created_at: string
+  updated_at: string
+  status: {
+    id: string
+    status: string
+  }
+}
+
+export interface CreateCustomerPayload {
+  full_name: string
+  email: string
+  phone: string
+  gender: string
   status: string
 }
 
+export interface CustomerApiResponse {
+  response: {
+    page: {
+      total_record_count: number
+      batch_number: number
+      batch_size: number
+      max_batch_size: number
+    },
+    records: Customer[]
+  },
+  metaData: {
+    message: string
+    code: number
+    response_code: string
+  }
+}
+
 export interface CustomerFilter {
+  name?: string
   status?: string
-  date?: string
   page: number
   itemsPerPage: number
 }
 
 export interface CustomerPagination {
-  currentPage: number
+  page: number
+  totalItems: number
   totalPages: number
-  total: number
   itemsPerPage: number
-  data: Customer[]
 }
 
 export interface CustomerAction {
@@ -33,5 +60,5 @@ export interface Column {
   key: string
   label: string
   sortable?: boolean
-  render?: (value: any, row?: any) => any
+  render?: (value: unknown, row?: Customer) => unknown
 }

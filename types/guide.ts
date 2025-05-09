@@ -7,31 +7,55 @@ export interface Guide {
     accountNumber: string
     createdAt: string
     status: string
-}
-
-export interface GuideFilter {
+  }
+  
+  export interface CreateGuidePayload {
+    name: string
+    phone: string
+    ktp: string
+    accountNumber: string
+    photo: string
+    status: string
+  }
+  
+  export interface GuideFilter {
     status?: string
     date?: string
     page: number
     itemsPerPage: number
-}
-
-export interface GuidePagination {
+  }
+  
+  export interface GuidePagination {
     currentPage: number
     totalPages: number
     total: number
     itemsPerPage: number
     data: Guide[]
-}
-
-
-export interface GuideAction {
-    type: 'view' | 'edit' | 'delete'
-    row: Guide
-}
-
-export interface Column {
-    key: keyof Guide | 'actions'
-    label: string
-    render?: (value: any, row: Guide) => string | number | { component: string; class: string; text?: string; slots?: { default: string } }
-}
+  }
+  
+  export interface GuideApiListResponse {
+    response: {
+      page: {
+        total_record_count: number
+        batch_number: number
+        batch_size: number
+        max_batch_size?: number
+      }
+      records: Guide[]
+    }
+    metaData: {
+      message: string
+      code: number
+      response_code: string
+    }
+  }
+  
+  export interface GuideApiSingleResponse {
+    response: Guide
+    metaData: {
+      message: string
+      code: number
+      response_code: string
+    }
+  }
+  
