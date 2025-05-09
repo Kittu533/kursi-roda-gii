@@ -1,133 +1,149 @@
-import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import type { Agent, AgentFilter } from "~/types/agent"
-import { useAgents } from "~/composables/agent/use-agent"
-import { useNotification } from "~/composables/use-notification"
+import { defineStore } from 'pinia'
+import {
+  fetchAgents,
+  getAgentById,
+  createAgent,
+  updateAgent,
+  deleteAgent
+} from '@/composables/consume-api/agent.api'
+import type {
+  Agent,
+  CreateAgentPayload,
+  AgentFilter,
+  AgentPagination
+} from '~/types/agent'
 
-export const useAgentStore = defineStore("agent", () => {
-  // Composables
-  const {
-    agents: agentsRef,
-    selectedAgent: selectedAgentRef,
-    pagination: paginationRef,
-    isLoading,
-    error,
-    fetchAgents,
-    fetchAgentById,
-    saveAgent,
-    removeAgent,
-  } = useAgents()
+interface AgentStoreState {
+  agents: Agent[]
+  pagination: AgentPagination | null
+  filter: AgentFilter
+  selectedAgent: Agent | null
+  isLoading: boolean
+  error: string | null
+}
 
-  const notification = useNotification()
-
-  // State
-  const filter = ref<AgentFilter>({
-    status: "",
-    date: "",
-    page: 1,
-    itemsPerPage: 5,
-  })
-
-  // Actions
-  const loadAgents = async () => {
-    try {
-      const result = await fetchAgents(filter.value)
-      return result
-    } catch (e) {
-      notification.error("Failed to load agents")
-      throw e
-    }
-  }
-
-  const setFilter = async (newFilter: Partial<AgentFilter>) => {
-    filter.value = {
-      ...filter.value,
-      ...newFilter,
-      // Reset to page 1 when filter changes (except when explicitly changing page)
-      page: newFilter.page || 1,
-    }
-
-    return await loadAgents()
-  }
-
-  const resetFilter = async () => {
-    filter.value = {
-      status: "",
-      date: "",
+export const useAgentStore = defineStore('agent', {
+  state: (): AgentStoreState => ({
+    agents: [],
+    pagination: null,
+    filter: {
+      name: '',
+      status: '',
       page: 1,
-      itemsPerPage: 5,
-    }
+      itemsPerPage: 5
+    },
+    selectedAgent: null,
+    isLoading: false,
+    error: null
+  }),
 
-    return await loadAgents()
-  }
+  actions: {
+    async loadAgents(): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const res = await fetchAgents(this.filter)
+        this.agents = res.response.records
 
-  const loadAgentDetails = async (id: string) => {
-    try {
-      return await fetchAgentById(id)
-    } catch (e) {
-      notification.error("Failed to load agent details")
-      throw e
-    }
-  }
-
-  const updateAgent = async (id: string, agentData: Partial<Agent>) => {
-    try {
-      const result = await saveAgent({ id, ...agentData })
-      notification.success("Agent updated successfully")
-      return result
-    } catch (e) {
-      notification.error("Failed to update agent")
-      throw e
-    }
-  }
-
-  const createAgent = async (agentData: Omit<Agent, "id">) => {
-    try {
-      const result = await saveAgent(agentData)
-      notification.success("Agent created successfully")
-      return result
-    } catch (e) {
-      notification.error("Failed to create agent")
-      throw e
-    }
-  }
-
-  const deleteAgent = async (id: string) => {
-    try {
-      const result = await removeAgent(id)
-      if (result) {
-        notification.success("Agent deleted successfully")
-        await loadAgents()
+        this.pagination = {
+          currentPage: res.response.page.batch_number,
+          total: res.response.page.total_record_count,
+          totalPages: Math.ceil(res.response.page.total_record_count / res.response.page.batch_size),
+          itemsPerPage: res.response.page.batch_size,
+          data: res.response.records
+        }
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to load agents'
+        console.error('Error loading agents:', error)
+      } finally {
+        this.isLoading = false
       }
-      return result
-    } catch (e) {
-      notification.error("Failed to delete agent")
-      throw e
+    },
+
+    async getAgentDetail(id: string): Promise<Agent | null> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const res = await getAgentById(id)
+        this.selectedAgent = res.response
+        return this.selectedAgent
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to get agent detail'
+        console.error('Error getting agent detail:', error)
+        return null
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    clearSelectedAgent(): void {
+      this.selectedAgent = null
+    },
+
+    setFilter(filter: Partial<AgentFilter>): void {
+      this.filter = { ...this.filter, ...filter }
+      this.loadAgents()
+    },
+
+    resetFilter(): void {
+      this.filter = {
+        name: '',
+        status: '',
+        page: 1,
+        itemsPerPage: 5
+      }
+      this.loadAgents()
+    },
+
+    async createNewAgent(data: CreateAgentPayload): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const result = await createAgent(data)
+        await this.loadAgents()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to create agent'
+        console.error('Error creating agent:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updateAgent(id: string, data: Partial<CreateAgentPayload>): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+        const result = await updateAgent(id, data)
+        if (this.selectedAgent?.id === id) {
+          await this.getAgentDetail(id)
+        }
+        await this.loadAgents()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to update agent'
+        console.error('Error updating agent:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async deleteAgent(id: string): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+        await deleteAgent(id)
+        this.agents = this.agents.filter(agent => agent.id !== id)
+        if (this.selectedAgent?.id === id) this.clearSelectedAgent()
+        await this.loadAgents()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Failed to delete agent'
+        console.error('Error deleting agent:', error)
+      } finally {
+        this.isLoading = false
+      }
     }
-  }
-
-  // Getters
-  const agents = computed(() => agentsRef.value)
-  const selectedAgent = computed(() => selectedAgentRef.value)
-  const pagination = computed(() => paginationRef.value)
-
-  return {
-    // State
-    filter,
-    agents,
-    selectedAgent,
-    pagination,
-    isLoading,
-    error,
-
-    // Actions
-    loadAgents,
-    setFilter,
-    resetFilter,
-    loadAgentDetails,
-    updateAgent,
-    createAgent,
-    deleteAgent,
   }
 })
-

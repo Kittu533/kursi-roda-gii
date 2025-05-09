@@ -21,13 +21,6 @@
             </option>
           </select>
         </div>
-
-        <ExportDropdown
-          v-if="showExport"
-          :columns="exportColumns"
-          :data="exportData"
-          :filename="exportFilename"
-        />
       </div>
     </div>
 

@@ -1,18 +1,17 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between mb-4">
       <h2 class="text-2xl font-bold tracking-tight">Agen</h2>
       <div class="flex items-center gap-2">
         <button
           class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
           @click="router.push('/admin/pengguna/agent/create')"
         >
-          <span>Tambah </span>
+          <span>Tambah</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
-            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
@@ -28,19 +27,18 @@
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
-          title="Data Agent"
+          title="Data Agen"
           filename="agent"
         />
 
         <button
-          class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
+          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
-            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
@@ -55,6 +53,7 @@
       </div>
     </div>
 
+    <!-- Filter -->
     <DataTableFilter
       v-if="showFilter"
       :filter="filter"
@@ -63,6 +62,7 @@
       @reset="resetFilter"
     />
 
+    <!-- Data Table -->
     <data-table
       title="Data Agen"
       :headers="columns"
@@ -100,9 +100,6 @@ const router = useRouter();
 const agentStore = useAgentStore();
 
 const showFilter = ref(false);
-const isDeleteModalOpen = ref(false);
-const isSuccessModalOpen = ref(false);
-const selectedAgent = ref<Agent | null>(null);
 const isLoading = ref(false);
 const itemsPerPage = ref(10);
 
@@ -124,8 +121,10 @@ const loadData = async () => {
 const agents = computed<TableItem[]>(() =>
   agentStore.agents.map((a) => ({
     ...a,
-    status: capitalize(a.status),
-    openHour: `${a.openHour} - ${a.closeHour}`,
+    name: a.full_name,
+    photo: a.photo ?? "/default-avatar.png",
+    phone: a.phone,
+    status: capitalize(a.status?.status || "-"),
   }))
 );
 
@@ -141,7 +140,12 @@ const enhancedPagination = computed<TablePagination>(() => {
       itemsPerPage: itemsPerPage.value,
     };
   }
-  return { ...pagination.value, itemsPerPage: itemsPerPage.value };
+  return {
+    currentPage: pagination.value.currentPage,
+    totalPages: pagination.value.totalPages,
+    totalItems: pagination.value.total,
+    itemsPerPage: itemsPerPage.value,
+  };
 });
 
 const columns: TableHeader[] = [
@@ -152,31 +156,26 @@ const columns: TableHeader[] = [
     render: (value: string) => ({
       component: "img",
       src: value,
-      alt: "Profile",
+      alt: "Foto",
       class: "w-8 h-8 rounded-full object-cover",
     }),
   },
   { key: "name", label: "Nama Lengkap" },
   { key: "phone", label: "Nomor Telepon" },
-  { key: "location", label: "Lokasi" },
-  { key: "Jam Buka", label: "Jam Buka" },
-  { key: "Jam Tutup", label: "Jam Tutup" },
   { key: "status", label: "Status Akun" },
   { key: "actions", label: "Aksi" },
 ];
 
 const exportColumns = computed<ExportColumn[]>(() => [
   { key: "id", header: "ID Agen" },
-  { key: "name", header: "Nama Lengkap" },
+  { key: "full_name", header: "Nama Lengkap" },
   { key: "phone", header: "Nomor Telepon" },
-  { key: "location", header: "Lokasi" },
-  { key: "photo", header: "foto profil" },
-  { key: "Jam Buka", header: "Jam Buka" },
-  { key: "Jam Tutup", header: "Jam Tutup" },
+  { key: "email", header: "Email" },
+  { key: "gender", header: "Jenis Kelamin" },
   { key: "status", header: "Status Akun" },
 ]);
 
-const exportData = computed(() => agents.value);
+const exportData = computed(() => agentStore.agents);
 
 const filterFields = [
   { key: "name", label: "Nama", type: "text" },
@@ -221,8 +220,7 @@ const handleAction = async ({ type, row }: { type: string; row: Agent }) => {
       await router.push(`/admin/pengguna/agent/${row.id}/edit`);
       break;
     case "delete":
-      selectedAgent.value = row;
-      isDeleteModalOpen.value = true;
+      await agentStore.deleteAgent(row.id);
       break;
   }
 };

@@ -9,103 +9,90 @@
     :error="error"
     @save="saveCustomer"
   >
-    <!-- Custom field rendering if needed -->
     <template v-if="customerData" #field-status="{ data }">
-      <span :class="`px-2 py-1 rounded-md text-xs font-medium ${getStatusClass(data.status)}`">
-        {{ formatStatus(data.status) }}
+      <span
+        :class="`px-2 py-1 rounded-md text-xs font-medium ${getStatusClass(data.status.status)}`"
+      >
+        {{ formatStatus(data.status.status) }}
       </span>
     </template>
   </DetailView>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useCustomerStore } from '~/store/customer'
-import { formatGender, formatStatus, getStatusClass } from '~/utils/formatters'
-
-// Define Customer interface
-interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  gender: string;
-  registerDate: string;
-  lastLogin: string;
-  status: string;
-  [key: string]: string | number | boolean;
-}
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useCustomerStore } from "~/store/customer";
+import { formatGender, formatStatus, getStatusClass } from "~/utils/formatters";
+import type { Customer } from "~/composables/consume-api/customer.api";
 
 // Router
-const route = useRoute()
-const router = useRouter()
-const customerId = computed(() => route.params.id as string)
+const route = useRoute();
+const router = useRouter();
+const customerId = computed(() => route.params.id as string);
 
 // Store
-const customerStore = useCustomerStore()
-const customer = computed<Customer | null>(() => customerStore.selectedCustomer)
-// Create a non-reactive copy of the customer data to avoid circular references
-const customerData = computed(() => customer.value ? {...customer.value} : null)
-const isLoading = computed(() => customerStore.isLoading)
-const error = computed(() => customerStore.error)
+const customerStore = useCustomerStore();
+const customer = computed<Customer | null>(
+  () => customerStore.selectedCustomer
+);
+const customerData = computed(() =>
+  customer.value ? { ...customer.value } : null
+);
+const isLoading = computed(() => customerStore.isLoading);
+const error = computed(() => customerStore.error);
 
 // Breadcrumbs
 const breadcrumbs = [
-  { text: 'Pengguna', to: '/admin/pengguna' },
-  { text: 'Pelanggan', to: '/admin/pengguna/pelanggan' }
-]
+  { text: "Pengguna", to: "/admin/pengguna" },
+  { text: "Pelanggan", to: "/admin/pengguna/pelanggan" },
+];
 
 // Fields configuration
 const fields = [
-  { key: 'id', label: 'ID Pelanggan' },
-  { key: 'name', label: 'Nama Lengkap' },
-  { key: 'phone', label: 'Nomor Telepon' },
-  { key: 'email', label: 'Email' },
+  { key: "id", label: "ID Pelanggan" },
+  { key: "full_name", label: "Nama Lengkap" },
+  { key: "phone", label: "Nomor Telepon" },
+  { key: "email", label: "Email" },
   {
-    key: 'gender',
-    label: 'Gender',
-    formatter: formatGender
+    key: "gender",
+    label: "Gender",
+    formatter: formatGender,
   },
-  { key: 'registerDate', label: 'Akun dibuat' },
-  { key: 'lastLogin', label: 'Akun diperbarui' },
+  { key: "created_at", label: "Akun dibuat" },
+  { key: "updated_at", label: "Akun diperbarui" },
   {
-    key: 'status',
-    label: 'Status',
-    type: 'status' as const,
-    formatter: formatStatus,
-    getStatusClass: getStatusClass
-  }
-]
+    key: "status",
+    label: "Status",
+    type: "status" as const,
+    formatter: (status: { status: string }) => formatStatus(status.status),
+    getStatusClass: (status: { status: string }) =>
+      getStatusClass(status.status),
+  },
+];
 
-// Methods
+// Save method
 const saveCustomer = async () => {
   if (customer.value) {
     try {
-      await customerStore.updateCustomer(customer.value.id, customer.value)
-      await router.push('/admin/pengguna/pelanggan')
+      // Note: updateCustomer method needs to be added to the store
+      // For now this is a placeholder
+      console.log("Would update customer:", customer.value);
+      await router.push("/admin/pengguna/pelanggan");
     } catch (error) {
-      console.error('Error saving customer:', error)
+      console.error("Error saving customer:", error);
     }
   }
-}
+};
 
 // Lifecycle
-const customerDetailsLoaded = ref(false)
-
-const loadCustomer = async () => {
+onMounted(async () => {
   if (customerId.value) {
     try {
-      await customerStore.loadCustomerDetails(customerId.value)
-      customerDetailsLoaded.value = true
+      await customerStore.getCustomerDetail(customerId.value);
     } catch (error) {
-      console.error('Error loading customer details:', error)
-      customerDetailsLoaded.value = true
+      console.error("Error loading customer details:", error);
     }
   }
-}
-
-onMounted(async () => {
-  await loadCustomer()
-})
+});
 </script>
