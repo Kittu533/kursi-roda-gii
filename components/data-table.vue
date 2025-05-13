@@ -7,16 +7,9 @@
       <div class="flex items-center space-x-4">
         <div v-if="showRowsPerPage" class="flex items-center space-x-2">
           <span class="text-sm text-gray-500">Rows per page:</span>
-          <select
-            v-model="localRowsPerPage"
-            class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white"
-            @change="handleRowsPerPageChange"
-          >
-            <option
-              v-for="size in rowsPerPageOptions"
-              :key="size"
-              :value="size"
-            >
+          <select v-model="localRowsPerPage" class="border border-gray-300 rounded-md text-sm py-1 px-2 bg-white"
+            @change="handleRowsPerPageChange">
+            <option v-for="size in rowsPerPageOptions" :key="size" :value="size">
               {{ size }}
             </option>
           </select>
@@ -29,61 +22,37 @@
         <thead class="bg-white">
           <tr>
             <!-- Row number column -->
-            <th
-              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
-            >
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
               No.
             </th>
-            <th
-              v-for="header in headers.filter((h) => h.key !== 'actions')"
-              :key="header.key"
-              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
+            <th v-for="header in headers.filter((h) => h.key !== 'actions')" :key="header.key"
+              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               {{ header.label }}
             </th>
             <!-- Pinned action column -->
-            <th
-              v-if="hasActionsColumn"
-              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-white shadow-l z-10 w-24"
-            >
+            <th v-if="hasActionsColumn"
+              class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-white shadow-l z-10 w-24">
               {{ actionsHeader.label }}
             </th>
           </tr>
         </thead>
         <tbody v-if="!isLoading" class="bg-white divide-y divide-gray-200">
-          <tr
-            v-for="(item, index) in items"
-            :key="getItemKey(item, index)"
-            class="hover:bg-gray-50"
-          >
+          <tr v-for="(item, index) in items" :key="getItemKey(item, index)" class="hover:bg-gray-50">
             <!-- Row number cell -->
             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
               {{ calculateRowNumber(index) }}
             </td>
-            <td
-              v-for="header in headers.filter((h) => h.key !== 'actions')"
-              :key="header.key"
-              class="px-4 py-3 whitespace-nowrap text-sm"
-            >
+            <td v-for="header in headers.filter((h) => h.key !== 'actions')" :key="header.key"
+              class="px-4 py-3 whitespace-nowrap text-sm">
               <!-- Use slot for custom cell rendering if provided -->
-              <slot
-                :name="`cell-${header.key}`"
-                :item="item"
-                :index="index"
-                :value="getItemValue(item, header.key)"
-              >
+              <slot :name="`cell-${header.key}`" :item="item" :index="index" :value="getItemValue(item, header.key)">
                 <!-- Default cell rendering -->
                 <template v-if="header.key === 'status' && header.render">
-                  <component
-                    :is="
-                      header.render(String(getItemValue(item, header.key)))
-                        .component || 'span'
-                    "
-                    :class="
-                      header.render(String(getItemValue(item, header.key)))
+                  <component :is="header.render(String(getItemValue(item, header.key)))
+                      .component || 'span'
+                    " :class="header.render(String(getItemValue(item, header.key)))
                         .class
-                    "
-                  >
+                      ">
                     {{
                       header.render(String(getItemValue(item, header.key))).text
                     }}
@@ -102,40 +71,20 @@
               </slot>
             </td>
             <!-- Pinned action column -->
-            <td
-              v-if="hasActionsColumn"
-              class="px-4 py-3 whitespace-nowrap text-sm sticky right-0 bg-white shadow-l z-10"
-            >
+            <td v-if="hasActionsColumn"
+              class="px-4 py-3 whitespace-nowrap text-sm sticky right-0 bg-white shadow-l z-10">
               <div class="flex space-x-2 justify-center">
                 <slot name="actions" :item="item" :index="index">
-                  <button
-                    v-if="showViewAction"
-                    class="text-blue-500 hover:text-blue-700"
-                    @click="handleAction('view', item)"
-                    title="View"
-                  >
-                    <NuxtIcon
-                      name="material-symbols:visibility-rounded"
-                      class="h-5 w-5"
-                    />
+                  <button v-if="showViewAction" class="text-blue-500 hover:text-blue-700"
+                    @click="handleAction('view', item)" title="View">
+                    <NuxtIcon name="material-symbols:visibility-rounded" class="h-5 w-5" />
                   </button>
-                  <button
-                    v-if="showEditAction"
-                    class="text-yellow-500 hover:text-yellow-700"
-                    @click="handleAction('edit', item)"
-                    title="Edit"
-                  >
-                    <NuxtIcon
-                      name="material-symbols:edit-square-outline"
-                      class="h-5 w-5"
-                    />
+                  <button v-if="showEditAction" class="text-yellow-500 hover:text-yellow-700"
+                    @click="handleAction('edit', item)" title="Edit">
+                    <NuxtIcon name="material-symbols:edit-square-outline" class="h-5 w-5" />
                   </button>
-                  <button
-                    v-if="showDeleteAction"
-                    class="text-red-500 hover:text-red-700"
-                    @click="openDeleteModal(item)"
-                    title="Delete"
-                  >
+                  <button v-if="showDeleteAction" class="text-red-500 hover:text-red-700" @click="openDeleteModal(item)"
+                    title="Delete">
                     <NuxtIcon name="material-symbols:delete" class="h-5 w-5" />
                   </button>
                 </slot>
@@ -145,15 +94,10 @@
         </tbody>
         <tbody v-else>
           <tr>
-            <td
-              :colspan="hasActionsColumn ? headers.length + 1 : headers.length"
-              class="px-4 py-8 text-center text-gray-500"
-            >
+            <td :colspan="hasActionsColumn ? headers.length + 1 : headers.length"
+              class="px-4 py-8 text-center text-gray-500">
               <div class="flex flex-col items-center justify-center">
-                <NuxtIcon
-                  name="loader"
-                  class="h-8 w-8 animate-spin text-primary-500 mb-2"
-                />
+                <NuxtIcon name="loader" class="h-8 w-8 animate-spin text-primary-500 mb-2" />
                 <span>Loading data...</span>
               </div>
             </td>
@@ -161,10 +105,8 @@
         </tbody>
         <tbody v-if="!isLoading && items.length === 0">
           <tr>
-            <td
-              :colspan="hasActionsColumn ? headers.length + 1 : headers.length"
-              class="px-4 py-8 text-center text-gray-500"
-            >
+            <td :colspan="hasActionsColumn ? headers.length + 1 : headers.length"
+              class="px-4 py-8 text-center text-gray-500">
               No data available
             </td>
           </tr>
@@ -174,10 +116,7 @@
 
     <!-- New Pagination UI -->
     <div class="px-4 py-3 border-t border-gray-200">
-      <div
-        v-if="showPagination && pagination && totalPages > 1"
-        class="flex justify-between items-center"
-      >
+      <div v-if="showPagination && pagination && totalPages > 1" class="flex justify-between items-center">
         <div class="text-sm text-muted-foreground">
           Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} entries
           (Page {{ currentPage }} of {{ totalPages }})
@@ -186,28 +125,20 @@
         <div class="flex space-x-1">
           <button
             class="px-2 py-1 rounded-md text-sm border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="currentPage === 1"
-            @click="$emit('page-change', currentPage - 1)"
-          >
+            :disabled="currentPage === 1" @click="$emit('page-change', currentPage - 1)">
             <NuxtIcon name="material-symbols:chevron-left" class="w-4 h-4" />
           </button>
 
-          <button
-            v-for="page in paginationRange"
-            :key="page"
+          <button v-for="page in paginationRange" :key="page"
             class="px-3 py-1 rounded-md text-sm border bg-transparent hover:bg-muted"
-            :class="{ 'border-primary text-primary': page === currentPage }"
-            :disabled="page === '...'"
-            @click="page !== '...' && $emit('page-change', Number(page))"
-          >
+            :class="{ 'border-primary text-primary': page === currentPage }" :disabled="page === '...'"
+            @click="page !== '...' && $emit('page-change', Number(page))">
             {{ page }}
           </button>
 
           <button
             class="px-2 py-1 rounded-md text-sm border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="currentPage === totalPages"
-            @click="$emit('page-change', currentPage + 1)"
-          >
+            :disabled="currentPage === totalPages" @click="$emit('page-change', currentPage + 1)">
             <NuxtIcon name="material-symbols:chevron-right" class="w-4 h-4" />
           </button>
         </div>
@@ -215,10 +146,7 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div
-      v-if="isDeleteModalOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    >
+    <div v-if="isDeleteModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
         <p class="text-gray-600 mb-6">
@@ -226,16 +154,12 @@
           undone.
         </p>
         <div class="flex justify-end space-x-3">
-          <button
-            @click="isDeleteModalOpen = false"
-            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
+          <button @click="isDeleteModalOpen = false"
+            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             Cancel
           </button>
-          <button
-            @click="confirmDelete"
-            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
-          >
+          <button @click="confirmDelete"
+            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
             Delete
           </button>
         </div>
@@ -406,7 +330,7 @@ const startItem = computed(() => {
   if (props.items.length === 0) return 0;
   return (
     (currentPage.value - 1) *
-      (props.pagination?.itemsPerPage || localRowsPerPage.value) +
+    (props.pagination?.itemsPerPage || localRowsPerPage.value) +
     1
   );
 });
@@ -501,28 +425,28 @@ function formatValue(value: TableItemValue, format?: string): string {
   return String(value);
 }
 
-const statusClass: Record<string, { bg: string; text: string }> = {
-  paid: { bg: "bg-green-100", text: "text-green-800" },
-  failed: { bg: "bg-red-100", text: "text-red-800" },
-  refunded: { bg: "bg-gray-100", text: "text-gray-800" },
-  aktif: { bg: "bg-green-100", text: "text-green-800" },
-  nonaktif: { bg: "bg-gray-100", text: "text-gray-800" },
-  dibekukan: { bg: "bg-red-100", text: "text-red-800" },
-  menunggu: { bg: "bg-orange-100", text: "text-orange-800" },
-  perbaikan: { bg: "bg-red-100", text: "text-red-800" },
-  tersedia: { bg: "bg-green-100", text: "text-green-800" },
-  tersewa: { bg: "bg-gray-100", text: "text-gray-800" },
-  expired: { bg: "bg-red-100", text: "text-red-800" },
-  open: { bg: "bg-orange-300", text: "text-orange-800" },
-  forwarded: { bg: "bg-gray-100", text: "text-gray-800" },
-  resolved: { bg: "bg-green-100", text: "text-green-800" },
-  rejected: { bg: "bg-red-100", text: "text-red-800" },
-  tertunda: { bg: "bg-gray-100", text: "text-gray-800" },
-  berhasil: { bg: "bg-green-100", text: "text-green-800" },
-  gagal: { bg: "bg-red-100", text: "text-red-800" },
-  batal: { bg: "bg-orange-300", text: "text-orange-800" },
-  ditolak: { bg: "bg-red-100", text: "text-red-800" },
-};
+// const statusClass: Record<string, { bg: string; text: string }> = {
+//   paid: { bg: "bg-green-100", text: "text-green-800" },
+//   failed: { bg: "bg-red-100", text: "text-red-800" },
+//   refunded: { bg: "bg-gray-100", text: "text-gray-800" },
+//   aktif: { bg: "bg-green-100", text: "text-green-800" },
+//   nonaktif: { bg: "bg-gray-100", text: "text-gray-800" },
+//   dibekukan: { bg: "bg-red-100", text: "text-red-800" },
+//   menunggu: { bg: "bg-orange-100", text: "text-orange-800" },
+//   perbaikan: { bg: "bg-red-100", text: "text-red-800" },
+//   tersedia: { bg: "bg-green-100", text: "text-green-800" },
+//   tersewa: { bg: "bg-gray-100", text: "text-gray-800" },
+//   expired: { bg: "bg-red-100", text: "text-red-800" },
+//   open: { bg: "bg-orange-300", text: "text-orange-800" },
+//   forwarded: { bg: "bg-gray-100", text: "text-gray-800" },
+//   resolved: { bg: "bg-green-100", text: "text-green-800" },
+//   rejected: { bg: "bg-red-100", text: "text-red-800" },
+//   tertunda: { bg: "bg-gray-100", text: "text-gray-800" },
+//   berhasil: { bg: "bg-green-100", text: "text-green-800" },
+//   gagal: { bg: "bg-red-100", text: "text-red-800" },
+//   batal: { bg: "bg-orange-300", text: "text-orange-800" },
+//   ditolak: { bg: "bg-red-100", text: "text-red-800" },
+// };
 
 function getStatusClass(status: TableItemValue): string {
   if (!status) {
@@ -608,30 +532,39 @@ table {
 .bg-green-100 {
   background-color: #dcfce7;
 }
+
 .text-green-800 {
   color: #166534;
 }
+
 .bg-red-100 {
   background-color: #fee2e2;
 }
+
 .text-red-800 {
   color: #991b1b;
 }
+
 .bg-blue-100 {
   background-color: #dbeafe;
 }
+
 .text-blue-800 {
   color: #1e40af;
 }
+
 .bg-orange-100 {
   background-color: #ffedd5;
 }
+
 .text-orange-800 {
   color: #9a3412;
 }
+
 .bg-gray-100 {
   background-color: #f3f4f6;
 }
+
 .text-gray-800 {
   color: #1f2937;
 }

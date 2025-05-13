@@ -1,4 +1,3 @@
-// composables/use-fetch-api.ts
 export interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   query?: Record<string, unknown>
@@ -8,6 +7,8 @@ export interface ApiRequestOptions {
 
 export const useApi = async <T>(url: string, options: ApiRequestOptions = {}): Promise<T> => {
   const config = useRuntimeConfig()
+
+  // SSR-safe token/key access
   const token = import.meta.client ? localStorage.getItem('token') : null
   const key = import.meta.client ? localStorage.getItem('key') : null
 

@@ -8,20 +8,7 @@
           @click="router.push('/admin/pengguna/agent/create')"
         >
           <span>Tambah</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-plus"
-          >
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
+          <NuxtIcon name="material-symbols:add" class="w-5 h-5" />
         </button>
 
         <ExportDropdown
@@ -35,19 +22,7 @@
           class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-filter"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+          <NuxtIcon name="material-symbols:filter-list-rounded" class="w-5 h-5" />
           <span>Filter</span>
         </button>
       </div>
@@ -119,12 +94,20 @@ const loadData = async () => {
 };
 
 const agents = computed<TableItem[]>(() =>
-  agentStore.agents.map((a) => ({
-    ...a,
+  agentStore.agents.map((a, index) => ({
+    no:
+      index +
+      1 +
+      ((pagination.value?.currentPage || 1) - 1) *
+        (pagination.value?.itemsPerPage || 10),
+    id: a.id,
     name: a.full_name,
-    photo: a.photo ?? "/default-avatar.png",
+    photo: "*jpg", // atau a.photo_profile ?? '/default-avatar.png'
     phone: a.phone,
-    status: capitalize(a.status?.status || "-"),
+    location: a.location ?? "-",
+    open_time: a.open_time ?? "-",
+    close_time: a.close_time ?? "-",
+    status: formatStatus(a.status?.status),
   }))
 );
 
@@ -149,29 +132,54 @@ const enhancedPagination = computed<TablePagination>(() => {
 });
 
 const columns: TableHeader[] = [
-  { key: "id", label: "ID Agen", sortable: true },
+  { key: "id", label: "ID Agen" },
+  { key: "name", label: "Nama Lengkap" },
+  { key: "photo", label: "Foto Profil" },
+  { key: "phone", label: "Nomor Telepon" },
+  { key: "location", label: "Lokasi" },
+  { key: "open_time", label: "Jam Buka" },
+  { key: "close_time", label: "Jam Tutup" },
   {
-    key: "photo",
-    label: "Foto Profil",
-    render: (value: string) => ({
-      component: "img",
-      src: value,
-      alt: "Foto",
-      class: "w-8 h-8 rounded-full object-cover",
+    key: "status",
+    label: "Status",
+    render: (status: string) => ({
+      component: "span",
+      class:
+        status === "Aktif"
+          ? "bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs"
+          : status === "Hapus"
+            ? "bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs"
+            : "bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs",
+      children: status, // ❌ tidak digunakan di slot
+      text: status, // ✅ inilah yang dicari di data-table.vue
     }),
   },
-  { key: "name", label: "Nama Lengkap" },
-  { key: "phone", label: "Nomor Telepon" },
-  { key: "status", label: "Status Akun" },
   { key: "actions", label: "Aksi" },
 ];
 
+const formatStatus = (status: string | undefined) => {
+  switch (status?.toUpperCase()) {
+    case "ACT":
+      return "Aktif";
+    case "NON":
+      return "Tidak Aktif";
+    case "DEL":
+    case "HAPUS":
+    case "DELTD":
+      return "Hapus";
+    case "INC":
+      return "Tidak Aktif"; // bisa juga ditampilkan sebagai "Menunggu" kalau kamu mau
+    default:
+      return "-";
+  }
+};
 const exportColumns = computed<ExportColumn[]>(() => [
   { key: "id", header: "ID Agen" },
   { key: "full_name", header: "Nama Lengkap" },
   { key: "phone", header: "Nomor Telepon" },
-  { key: "email", header: "Email" },
-  { key: "gender", header: "Jenis Kelamin" },
+  { key: "location", header: "Lokasi" },
+  { key: "open_time", header: "Jam Buka" },
+  { key: "close_time", header: "Jam Tutup" },
   { key: "status", header: "Status Akun" },
 ]);
 
@@ -225,6 +233,4 @@ const handleAction = async ({ type, row }: { type: string; row: Agent }) => {
   }
 };
 
-const capitalize = (val: string): string =>
-  val.charAt(0).toUpperCase() + val.slice(1);
 </script>

@@ -39,11 +39,18 @@
       <div class="p-4 space-y-4">
         <div class="space-y-2">
           <label for="id" class="text-sm font-medium">ID Pelanggan</label>
-          <input id="id" type="text" v-model="formData.id" class="w-full px-3 py-2 border rounded-md" readonly disabled />
+          <input id="id" type="text" v-model="formData.id" class="w-full px-3 py-2 border rounded-md" readonly
+            disabled />
         </div>
         <div class="space-y-2">
           <label for="fullName" class="text-sm font-medium">Nama Lengkap</label>
-          <input id="fullName" type="text" v-model="formData.full_name" class="w-full px-3 py-2 border rounded-md" required />
+          <input id="fullName" type="text" v-model="formData.full_name" class="w-full px-3 py-2 border rounded-md"
+            required />
+        </div>
+        <div class="space-y-2">
+          <label for="phone_code" class="text-sm font-medium">Kode Negara</label>
+          <input id="phone_code" type="text" v-model="formData.phone_code"
+            class="w-full px-3 py-2 border rounded-md bg-gray-100 text-gray-500" readonly disabled />
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-2">
@@ -52,7 +59,7 @@
           </div>
           <div class="space-y-2">
             <label for="email" class="text-sm font-medium">Email</label>
-            <input id="email" type="email" v-model="formData.email" class="w-full px-3 py-2 border rounded-md" required />
+            <input id="email" type="email" v-model="formData.email" class="w-full px-3 py-2 border rounded-md" />
           </div>
         </div>
         <div class="space-y-2">
@@ -67,13 +74,14 @@
           <label for="status" class="text-sm font-medium">Status</label>
           <select id="status" v-model="formData.status" class="w-full px-3 py-2 border rounded-md" required>
             <option value="">Pilih Status</option>
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Non Aktif</option>
+            <option value="ACT">Aktif</option>
+            <option value="INC">Non Aktif</option>
           </select>
         </div>
       </div>
       <div class="p-4 border-t flex justify-end gap-2">
-        <button type="button" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50" @click="router.push('/admin/pengguna/pelanggan')">Batal</button>
+        <button type="button" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50"
+          @click="router.push('/admin/pengguna/pelanggan')">Batal</button>
         <button type="submit" class="bg-[#4072EE] text-white px-4 py-2 rounded-md hover:bg-[#3060DD]">Simpan</button>
       </div>
     </form>
@@ -96,12 +104,12 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 
 const formData = ref({
-  id: '',
   full_name: '',
   email: '',
   phone: '',
   gender: '',
-  status: ''
+  phone_code: '+62',
+  status: 'active' // default required by API
 })
 
 const loadCustomer = async () => {
@@ -110,12 +118,12 @@ const loadCustomer = async () => {
     const data = await customerStore.getCustomerDetail(customerId.value)
     if (data) {
       formData.value = {
-        id: data.id,
         full_name: data.full_name,
         email: data.email,
         phone: data.phone,
         gender: data.gender,
-        status: data.status?.status || ''
+        phone_code: '+62',
+        status: data.status?.status?.toLowerCase() || 'ACT'
       }
     }
   } catch (err: any) {
@@ -130,7 +138,16 @@ const saveCustomer = async () => {
     isLoading.value = true
     error.value = null
 
-    await customerStore.updateCustomer(customerId.value, formData.value)
+    const payload = {
+      full_name: formData.value.full_name,
+      email: formData.value.email,
+      phone: formData.value.phone,
+      gender: formData.value.gender,
+      phone_code: '+62',
+      status: formData.value.status
+    }
+
+    await customerStore.updateCustomer(customerId.value, payload)
     router.push('/admin/pengguna/pelanggan')
   } catch (err: any) {
     error.value = err.message || 'Gagal menyimpan perubahan'

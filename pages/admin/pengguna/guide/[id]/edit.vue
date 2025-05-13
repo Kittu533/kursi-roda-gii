@@ -1,208 +1,62 @@
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight">
-          {{ isEditing ? "Edit Pelanggan" : "Tambah Pelanggan Baru" }}
-        </h2>
-      </div>
-    </div>
-
     <!-- Breadcrumb Navigation -->
-    <div class="flex items-center space-x-2 text-sm">
+    <div class="flex items-center space-x-2 text-sm mb-4">
       <NuxtLink to="/" class="text-muted-foreground hover:text-foreground">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-home"
-        >
-          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
+        <NuxtIcon name="material-symbols:home" class="w-5 h-5" />
       </NuxtLink>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-chevron-right text-muted-foreground"
-      >
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-      <NuxtLink
-        to="/admin/pengguna/guide"
-        class="text-muted-foreground hover:text-foreground"
-      >
+      <NuxtIcon name="material-symbols:chevron-right" class="text-muted-foreground w-5 h-5" />
+      <NuxtLink to="/admin/pengguna/guide" class="text-muted-foreground hover:text-foreground">
+        Pengguna
+      </NuxtLink>
+      <NuxtIcon name="material-symbols:chevron-right" class="text-muted-foreground w-5 h-5" />
+      <NuxtLink to="/admin/pengguna/guide" class="text-muted-foreground hover:text-foreground">
         Guide
       </NuxtLink>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-chevron-right text-muted-foreground"
-      >
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-      <span>{{ isEditing ? "Edit" : "Tambah" }}</span>
     </div>
 
-    <!-- Loading state -->
+    <h1 class="text-xl font-bold mb-4">Edit Guide</h1>
+
+    <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-8">
-      <div
-        class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"
-      ></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
     </div>
 
-    <!-- Error state -->
+    <!-- Error -->
     <div v-else-if="error" class="bg-red-100 p-4 rounded-md text-red-800">
       {{ error }}
     </div>
 
     <!-- Form -->
-    <form
-      @submit.prevent="saveGuide"
-      class="bg-white border rounded-md overflow-hidden"
-    >
-      <div class="p-4 border-b">
-        <h3 class="text-lg font-medium">
-          {{ isEditing ? "Data Guide" : "Data Guide Baru" }}
-        </h3>
+    <form class="bg-white rounded-md p-4 space-y-4" @submit.prevent="saveGuide">
+      <div
+        class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
+        v-for="(label, key) in fieldLabels"
+        :key="key"
+      >
+        <label class="text-sm font-medium">{{ label }}</label>
+
+        <input
+          v-if="key !== 'status'"
+          v-model="formData[key]"
+          :type="key.includes('email') ? 'email' : 'text'"
+          class="md:col-span-3 border rounded-md px-3 py-2 w-full"
+        />
+
+        <select
+          v-else
+          v-model="formData.status"
+          class="md:col-span-3 border rounded-md px-3 py-2 w-full"
+        >
+          <option value="">Pilih Status</option>
+          <option value="ACT">Aktif</option>
+          <option value="INC">Nonaktif</option>
+          <option value="DEL">Dihapus</option>
+        </select>
       </div>
 
-      <div class="p-4 space-y-4">
-        <!-- ID Guide -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="id" class="text-sm font-medium">ID Guide</label>
-          <input
-            id="id"
-            type="text"
-            v-model="formData.id"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-            :disabled="isEditing"
-            readonly
-            placeholder="ID akan dibuat otomatis"
-          />
-        </div>
-
-        <!-- Nama Lengkap -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="fullName" class="text-sm font-medium">Nama Lengkap</label>
-          <input
-            id="fullName"
-            type="text"
-            v-model="formData.fullName"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-            required
-          />
-        </div>
-
-        <!-- Foto Profil -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="photo" class="text-sm font-medium">Foto Profil</label>
-          <input
-            id="photo"
-            type="file"
-            accept="image/*"
-            @change="handlePhotoUpload"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-
-        <!-- Nomor Telepon -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="phoneNumber" class="text-sm font-medium">Nomor Telepon</label>
-          <input
-            id="phoneNumber"
-            type="tel"
-            v-model="formData.phoneNumber"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-            required
-          />
-        </div>
-
-        <!-- Email -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="email" class="text-sm font-medium">Email</label>
-          <input
-            id="email"
-            type="email"
-            v-model="formData.email"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-            required
-          />
-        </div>
-
-        <!-- KTP -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="ktp" class="text-sm font-medium">KTP</label>
-          <input
-            id="ktp"
-            type="text"
-            v-model="formData.ktp"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-            required
-          />
-        </div>
-
-        <!-- Nomor Rekening -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="accountNumber" class="text-sm font-medium">Nomor Rekening</label>
-          <input
-            id="accountNumber"
-            type="text"
-            v-model="formData.accountNumber"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-            required
-          />
-        </div>
-
-        <!-- Status -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-          <label for="status" class="text-sm font-medium">Status</label>
-          <select
-            id="status"
-            v-model="formData.status"
-            class="md:col-span-3 w-full px-3 py-2 border rounded-md"
-            required
-          >
-            <option value="">Pilih Status</option>
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Non Aktif</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Tombol Aksi -->
-      <div class="p-4 border-t flex justify-end gap-2">
-        <button
-          type="button"
-          class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50"
-          @click="router.push('/admin/pengguna/guide')"
-        >
-          Batal
-        </button>
-        <button
-          type="submit"
-          class="bg-[#4072EE] text-white px-4 py-2 rounded-md hover:bg-[#3060DD]"
-        >
+      <div class="flex justify-end pt-4">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
           Simpan
         </button>
       </div>
@@ -211,32 +65,84 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useProductStore } from "~/store/product";
-import type { Product } from "~/types/product";
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useGuideStore } from '~/store/guide';
 
-// Router
 const route = useRoute();
 const router = useRouter();
-const productId = computed(() => route.params.id as string);
-const isEditing = computed(() => productId.value && productId.value !== "new");
+const guideStore = useGuideStore();
 
-// Store
-const productStore = useProductStore();
-const isLoading = computed(() => productStore.isLoading);
-const error = computed(() => productStore.error);
+const guideId = computed(() => route.params.id as string);
+const isEditing = computed(() => guideId.value && guideId.value !== 'new');
+const isLoading = computed(() => guideStore.isLoading);
+const error = computed(() => guideStore.error);
 
-// Form data
-const formData = ref<Partial<Product>>({
-  id: "",
-  agentId: "",
-  photo: "",
-  serialNumber: "",
-  productName: "",
-  model: "",
-  batteryLife: "",
-  stock: 0,
-  status: "",
+// Initial Form State
+const formData = ref({
+  name: '',
+  email: '',
+  phone: '',
+  emergency_phone_number: '',
+  profile_photo: '',
+  identity_document: '',
+  bank_account_number: '',
+  status: '' // WAJIB ADA
 });
+
+
+
+const fieldLabels: Record<string, string> = {
+  name: 'Nama Lengkap',
+  email: 'Email',
+  phone: 'Nomor Telepon',
+  emergency_phone_number: 'No. Darurat',
+  profile_photo: 'Foto Profil (URL)',
+  identity_document: 'KTP (URL)',
+  bank_account_number: 'Nomor Rekening',
+  status: 'Status'
+};
+
+// Save Action
+const saveGuide = async () => {
+  try {
+    await guideStore.updateGuide(guideId.value, { ...formData.value });
+    router.push('/admin/pengguna/guide');
+  } catch (err) {
+    console.error('Error saving guide:', err);
+  }
+};
+
+function convertStatus(code: string): string {
+  switch (code.toUpperCase()) {
+    case 'ACT': return 'active';
+    case 'INC': return 'inactive';
+    case 'DEL':
+    case 'HAPUS': return 'deleted';
+    default: return '';
+  }
+}
+
+// Load existing data
+onMounted(async () => {
+  if (isEditing.value) {
+    try {
+      const guide = await guideStore.getGuideDetail(guideId.value);
+      if (guide) {
+        formData.value = {
+          name: guide.full_name,
+          email: guide.email,
+          phone: guide.phone,
+          emergency_phone_number: guide.emergency_phone_number,
+          profile_photo: guide.photo_profile,
+          identity_document: guide.identity_document,
+          bank_account_number: guide.bank_account_number,
+        };
+      }
+    } catch (err) {
+      console.error('Error loading guide details:', err);
+    }
+  }
+});
+
 </script>

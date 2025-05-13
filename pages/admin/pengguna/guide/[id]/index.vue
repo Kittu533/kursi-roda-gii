@@ -4,23 +4,48 @@
     card-title="Data Guide"
     :breadcrumbs="breadcrumbs"
     :fields="fields"
-    :data="guide"
+    :data="formattedGuide"
     :loading="isLoading"
     :error="error"
-    :show-back-button="true"
+    back-button-text="Kembali"
+    save-button-text="Edit"
+    @back="router.push('/admin/pengguna/guide')"
+    @save="router.push(`/admin/pengguna/guide/${guide?.id}/edit`)"
   >
-    <template #before-table v-if="guide">
-      <div class="flex items-center gap-4 mb-6">
-        <img
-          :src="guide.photo"
-          alt="Profile"
-          class="w-20 h-20 rounded-full object-cover border"
-        />
-        <div>
-          <h3 class="text-xl font-medium">{{ guide.name }}</h3>
-          <p class="text-gray-500">{{ guide.id }}</p>
-        </div>
+    <template #field-photo_profile="{ data }">
+      <div v-if="data.photo_profile">
+        <a
+          :href="data.photo_profile"
+          target="_blank"
+          class="inline-flex items-center gap-1 px-2 py-1 border rounded text-sm hover:bg-gray-50"
+        >
+          <Icon name="mdi:eye-outline" /> Lihat Foto
+        </a>
       </div>
+      <div v-else class="text-gray-500 text-sm">-</div>
+    </template>
+
+    <template #field-identity_document="{ data }">
+      <a
+        v-if="data.identity_document"
+        :href="data.identity_document"
+        target="_blank"
+        class="text-blue-600 hover:underline text-sm"
+      >
+        Lihat KTP
+      </a>
+      <span v-else class="text-gray-500 text-sm">-</span>
+    </template>
+
+    <template #field-status="{ data }">
+      <span
+        class="text-xs font-medium px-2 py-1 rounded-full"
+        :class="data.status?.status === 'ACT'
+          ? 'bg-green-100 text-green-700'
+          : 'bg-[#585B58] text-white'"
+      >
+        {{ formatStatus(data.status?.status) }}
+      </span>
     </template>
   </DetailView>
 </template>
@@ -31,42 +56,68 @@ import { useRoute, useRouter } from 'vue-router'
 import { useGuideStore } from '~/store/guide'
 import DetailView from '~/components/detail-view.vue'
 
-// Router
 const route = useRoute()
 const router = useRouter()
 const guideId = computed(() => route.params.id as string)
 
-// Store
 const guideStore = useGuideStore()
 const guide = computed(() => guideStore.selectedGuide)
 const isLoading = computed(() => guideStore.isLoading)
 const error = computed(() => guideStore.error)
 
-// Breadcrumbs
 const breadcrumbs = [
   { text: 'Pengguna', to: '/admin/pengguna' },
   { text: 'Guide', to: '/admin/pengguna/guide' },
   { text: 'Detail' }
 ]
 
-// Fields configuration
+const formatStatus = (statusCode: string | undefined): string => {
+  switch (statusCode?.toUpperCase()) {
+    case 'ACT':
+      return 'Aktif'
+    case 'INC':
+    case 'NON':
+      return 'Tidak Aktif'
+    case 'DEL':
+    case 'HAPUS':
+      return 'Hapus'
+    default:
+      return '-'
+  }
+}
+
 const fields = [
   { key: 'id', label: 'ID Guide' },
-  { key: 'name', label: 'Nama Lengkap' },
+  { key: 'full_name', label: 'Nama Lengkap' },
+  { key: 'photo_profile', label: 'Foto Profil' },
   { key: 'phone', label: 'Nomor Telepon' },
-  { key: 'ktp', label: 'KTP' },
-  { key: 'accountNumber', label: 'Nomor Rekening' },
-  { key: 'createdAt', label: 'Akun dibuat' },
+  { key: 'email', label: 'Email' },
+  { key: 'identity_document', label: 'KTP' },
+  { key: 'bank_account_number', label: 'Nomor Rekening' },
   { key: 'status', label: 'Status', type: 'status' }
 ]
 
-// Lifecycle
+const formattedGuide = computed(() => {
+  if (!guide.value) return {}
+  return {
+    id: guide.value.id,
+    full_name: guide.value.full_name || '-',
+    photo_profile: guide.value.photo_profile,
+    email: guide.value.email || '-',
+    phone: guide.value.phone || '-',
+    identity_document: guide.value.identity_document || '-',
+    bank_account_number: guide.value.bank_account_number || '-',
+    status: guide.value.status
+  }
+})
+
+// FIX: gunakan getGuideDetail sesuai store refactor
 onMounted(async () => {
   if (guideId.value) {
     try {
-      await guideStore.loadGuideDetails(guideId.value)
-    } catch (error) {
-      console.error('Error loading guide details:', error)
+      await guideStore.getGuideDetail(guideId.value)
+    } catch (err) {
+      console.error('Error loading guide detail:', err)
     }
   }
 })

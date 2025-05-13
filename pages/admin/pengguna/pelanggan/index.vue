@@ -11,21 +11,7 @@
           class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
         >
           <span>Tambah </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-plus"
-          >
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
+         <NuxtIcon name="material-symbols:add" class="w-5 h-5" />
         </NuxtLink>
         <ExportDropdown
           :data="exportData"
@@ -37,20 +23,7 @@
           class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-filter"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+         <NuxtIcon name="material-symbols:filter-list-rounded" class="w-5 h-5" />
           <span>Filter</span>
         </button>
       </div>
@@ -106,7 +79,7 @@ const customerStore = useCustomerStore();
 // State
 const showFilter = ref(false);
 const isLoading = ref(false);
-const itemsPerPage = ref(10);
+const itemsPerPage = ref(5);
 
 // Fetch data on mount
 onMounted(async () => {
@@ -131,11 +104,10 @@ const customers = computed<TableItem[]>(() => {
     ...c,
     name: c.full_name,
     phone: c.phone,
-    gender: capitalize(c.gender),
-    status: capitalize(c.status?.status || '')
-  }))
-})
-
+    gender: formatGender(c.gender),
+    status: formatStatus(c.status?.status),
+  }));
+});
 
 const pagination = computed(() => customerStore.pagination);
 const filter = computed(() => customerStore.filter);
@@ -159,7 +131,21 @@ const columns: TableHeader[] = [
   { key: "phone", label: "Nomor Telepon" },
   { key: "email", label: "Alamat Email" },
   { key: "gender", label: "Jenis Kelamin" },
-  { key: "status", label: "Status Akun" },
+  {
+    key: "status",
+    label: "Status",
+    render: (status: string) => ({
+      component: "span",
+      class:
+        status === "Aktif"
+          ? "bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs"
+          : status === "Hapus"
+            ? "bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs"
+            : "bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs",
+      children: status, // ❌ tidak digunakan di slot
+      text: status, // ✅ inilah yang dicari di data-table.vue
+    }),
+  },
   { key: "actions", label: "Aksi" },
 ];
 
@@ -175,6 +161,35 @@ const exportColumns = computed<ExportColumn[]>(() => [
 
 const exportData = computed(() => customers.value);
 
+
+const formatStatus = (status: string | undefined) => {
+  switch (status?.toUpperCase()) {
+    case "ACT":
+      return "Aktif";
+    case "NON":
+      return "Tidak Aktif";
+    case "DEL":
+    case "HAPUS":
+    case "DELTD":
+      return "Hapus";
+    case "INC":
+      return "Tidak Aktif"; // bisa juga ditampilkan sebagai "Menunggu" kalau kamu mau
+    default:
+      return "-";
+  }
+};
+
+function formatGender(code: string): string {
+  switch (code.toLowerCase()) {
+    case "male":
+      return "Laki-laki";
+    case "female":
+      return "Perempuan";
+    default:
+      return code;
+  }
+}
+
 // Handler
 const applyFilter = (newFilter: Partial<ICustomerFilter>) => {
   customerStore.setFilter({
@@ -184,7 +199,6 @@ const applyFilter = (newFilter: Partial<ICustomerFilter>) => {
     itemsPerPage: itemsPerPage.value,
   });
 };
-
 
 const resetFilter = () => {
   customerStore.resetFilter();
@@ -217,8 +231,8 @@ const handleAction = async ({ type, row }: { type: string; row: Customer }) => {
         break;
     }
   } catch (error) {
-    console.error('Error handling action:', error);
-    alert('Terjadi kesalahan saat memproses aksi');
+    console.error("Error handling action:", error);
+    alert("Terjadi kesalahan saat memproses aksi");
   }
 };
 const filterFields = [
@@ -234,8 +248,4 @@ const filterFields = [
     options: ["aktif", "nonaktif", "menunggu", "dibatalkan"],
   },
 ];
-
-// Util
-const capitalize = (val: string): string =>
-  val.charAt(0).toUpperCase() + val.slice(1);
 </script>
