@@ -8,19 +8,22 @@ import type {
 export const fetchGuides = async (params: Record<string, any> = {}) => {
   return await useApi<GuideApiListResponse>('/guide', {
     method: 'GET',
+    service: 'auth', // Pastikan service yang benar digunakan
     query: params
   })
 }
 
 export const getGuideById = async (id: string) => {
   return await useApi<GuideApiSingleResponse>(`/guide/${id}`, {
-    method: 'GET'
+    method: 'GET',
+    service: 'auth'
   })
 }
 
 export const createGuide = async (payload: CreateGuidePayload) => {
   return await useApi('/guide', {
     method: 'POST',
+    service: 'auth', // Pastikan service yang benar digunakan
     body: payload
   })
 }
@@ -28,12 +31,14 @@ export const createGuide = async (payload: CreateGuidePayload) => {
 export const updateGuide = async (id: string, payload: Partial<CreateGuidePayload>) => {
   return await useApi(`/guide/${id}`, {
     method: 'PUT',
+    service: 'auth', // Pastikan service yang benar digunakan
     body: payload
   })
 }
 
 export const deleteGuide = async (id: string) => {
   return await useApi(`/guide/${id}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    service: 'auth' // Pastikan service yang benar digunakan
   })
 }

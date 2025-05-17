@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4">
+  <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold tracking-tight">Data Package</h2>
@@ -9,24 +9,9 @@
           class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
           @click="router.push('/admin/packages/create')"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-plus"
-          >
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
           <span>Tambah Paket</span>
+          <NuxtIcon name="material-symbols:add" class="w-5 h-5" />
         </button>
-        <!-- Komponen ExportDropdown -->
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
@@ -37,26 +22,12 @@
           class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-filter"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+          <NuxtIcon name="material-symbols:filter-list-rounded" class="w-5 h-5" />
           <span>Filter</span>
         </button>
       </div>
     </div>
 
-    <!-- Filter Panel -->
     <PackageFilter
       v-if="showFilter"
       :filter="filter"
@@ -65,31 +36,25 @@
       @close="showFilter = false"
     />
 
-    <!-- Data Table -->
-    <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
-      <div class="p-4 border-b">
-        <h3 class="text-lg font-medium">Data Package</h3>
-      </div>
-      <div class="p-4">
-        <UiTable
-          :data="packages"
-          :columns="columns"
-          :loading="isLoading"
-          @action="handleAction"
-        />
+    <!-- ✅ Ganti ke data-table -->
+    <data-table
+      title="Data Package"
+      :headers="columns"
+      :items="transformedPackages"
+      :pagination="enhancedPagination"
+      :is-loading="isLoading"
+      :show-export="true"
+      :export-columns="exportColumns"
+      :export-data="exportData"
+      export-filename="Packages"
+      :rows-per-page-options="[5, 10, 20, 50]"
+      :default-rows-per-page="itemsPerPage"
+      @action="handleAction"
+      @page-change="handlePageChange"
+      @rows-per-page-change="handleRowsPerPageChange"
+    />
 
-        <UiPagination
-          v-if="pagination && pagination.totalPages > 1"
-          :current-page="pagination.currentPage"
-          :total-pages="pagination.totalPages"
-          :total="pagination.total"
-          :items-per-page="pagination.itemsPerPage"
-          @page-change="handlePageChange"
-        />
-      </div>
-    </div>
-    
-    <!-- Confirmation Modals -->
+    <!-- Modals -->
     <ConfirmationModal
       v-model:isOpen="isDeleteModalOpen"
       type="delete"
@@ -97,7 +62,6 @@
       @confirm="confirmDelete"
       @cancel="isDeleteModalOpen = false"
     />
-    
     <ConfirmationModal
       v-model:isOpen="isSuccessModalOpen"
       type="success"
@@ -109,34 +73,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { usePackageStore } from "~/store/package";
-import type { Package } from "~/types/package";
-import PackageFilter from "~/components/packages/package-filter.vue";
-import UiTable from "~/components/ui-table.vue";
-import UiPagination from "~/components/ui-pagination.vue";
-import ConfirmationModal from "~/components/ui/modals/confirmation-modal.vue";
 import ExportDropdown from "~/components/export-to.vue";
+import ConfirmationModal from "~/components/ui/modals/confirmation-modal.vue";
+import dataTable from "~/components/data-table.vue";
+import PackageFilter from "~/components/packages/package-filter.vue";
 
-// Router and stores
+import type { TableHeader, ExportColumn, TableItem, TablePagination } from "~/components/data-table.vue";
+import type { Package } from "~/types/package";
+
 const router = useRouter();
 const packageStore = usePackageStore();
 
-// State
 const showFilter = ref(false);
 const isDeleteModalOpen = ref(false);
 const isSuccessModalOpen = ref(false);
 const selectedPackage = ref<Package | null>(null);
+const itemsPerPage = ref(10);
 
-// Computed
 const packages = computed(() => packageStore.packages);
+const isLoading = computed(() => packageStore.isLoading);
 const pagination = computed(() => packageStore.pagination);
 const filter = computed(() => packageStore.filter);
-const isLoading = computed(() => packageStore.isLoading);
 
-// Table columns configuration
-const columns = [
+const transformedPackages = computed<TableItem[]>(() =>
+  packages.value.map((p) => ({
+    ...p,
+    price: `Rp ${Number(p.price).toLocaleString("id-ID")}`,
+    creationDate: new Date(p.creationDate).toLocaleDateString("id-ID"),
+    updateDate: new Date(p.updateDate).toLocaleDateString("id-ID"),
+  }))
+);
+
+const enhancedPagination = computed<TablePagination>(() => {
+  if (!pagination.value) {
+    return {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: transformedPackages.value.length,
+      itemsPerPage: itemsPerPage.value,
+    };
+  }
+  return { ...pagination.value, itemsPerPage: itemsPerPage.value };
+});
+
+const columns: TableHeader[] = [
   { key: "packageId", label: "ID Package" },
   { key: "voucherId", label: "ID Voucher" },
   { key: "name", label: "Nama" },
@@ -146,27 +129,19 @@ const columns = [
   { key: "actions", label: "Aksi" }
 ];
 
-// Export columns
-const exportColumns = computed(() => {
-  return [
-    { key: "packageId", header: "ID Package" },
-    { key: "voucherId", header: "ID Voucher" },
-    { key: "name", header: "Nama" },
-    { key: "price", header: "Harga" },
-    { key: "creationDate", header: "Tanggal Dibuat" },
-    { key: "updateDate", header: "Tanggal Diperbarui" },
-    { key: "status", header: "Status" }
-  ];
-});
+const exportColumns = computed<ExportColumn[]>(() => [
+  { key: "packageId", header: "ID Package" },
+  { key: "voucherId", header: "ID Voucher" },
+  { key: "name", header: "Nama" },
+  { key: "price", header: "Harga" },
+  { key: "creationDate", header: "Tanggal Dibuat" },
+  { key: "updateDate", header: "Tanggal Diperbarui" }
+]);
 
-// Export data
-const exportData = computed(() => {
-  return packages.value;
-});
+const exportData = computed(() => transformedPackages.value);
 
-// Methods
-const applyFilter = (newFilter: Partial<PackageFilter>) => {
-  packageStore.setFilter(newFilter);
+const applyFilter = (newFilter: Partial<any>) => {
+  packageStore.setFilter({ ...filter.value, ...newFilter, page: 1, itemsPerPage: itemsPerPage.value });
 };
 
 const resetFilter = () => {
@@ -175,49 +150,45 @@ const resetFilter = () => {
 };
 
 const handlePageChange = (page: number) => {
-  packageStore.setFilter({ page });
+  packageStore.setFilter({ ...filter.value, page });
+};
+
+const handleRowsPerPageChange = (size: number) => {
+  itemsPerPage.value = size;
+  packageStore.setFilter({ page: 1, itemsPerPage: size });
 };
 
 const handleAction = async ({ type, row }: { type: string; row: Package }) => {
-  const packageData = row;
-
+  const p = row;
   switch (type) {
     case "view":
-      await router.push(`/admin/packages/${packageData.id}`);
+      await router.push(`/admin/packages/${p.id}`);
       break;
     case "edit":
-      await router.push(`/admin/packages/${packageData.id}/edit`);
+      await router.push(`/admin/packages/${p.id}/edit`);
       break;
     case "delete":
-      selectedPackage.value = packageData;
+      selectedPackage.value = p;
       isDeleteModalOpen.value = true;
       break;
   }
 };
 
-// Confirm delete handler
 const confirmDelete = async () => {
   if (selectedPackage.value) {
     try {
       await packageStore.deletePackage(selectedPackage.value.id);
       isDeleteModalOpen.value = false;
       isSuccessModalOpen.value = true;
-      setTimeout(() => {
-        isSuccessModalOpen.value = false;
-      }, 2000);
+      setTimeout(() => (isSuccessModalOpen.value = false), 2000);
     } catch (error) {
-      console.error("Error deleting package:", error);
+      console.error("Delete failed", error);
       isDeleteModalOpen.value = false;
     }
   }
 };
 
-// Lifecycle
 onMounted(async () => {
-  try {
-    await packageStore.loadPackages();
-  } catch (error) {
-    console.error("Error loading packages:", error);
-  }
+  await packageStore.loadPackages();
 });
 </script>
