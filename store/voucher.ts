@@ -1,136 +1,180 @@
-import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import type { Voucher, VoucherFilter } from "~/types/voucher"
-import { useVouchers } from "~/composables/voucher/use-voucher"
-import { useNotification } from "~/composables/use-notification"
+import { defineStore } from 'pinia'
+import {
+  fetchVouchers,
+  getVoucherById,
+  createVoucher,
+  updateVoucher,
+  deleteVoucher
+} from '@/composables/consume-api/voucher.api'
+import { useApi } from '@/composables/use-fetch-api'
+import type {
+  Voucher,
+  CreateVoucherPayload,
+  VoucherFilter,
+  VoucherPagination
+} from '~/types/voucher'
 
-export const useVoucherStore = defineStore("voucher", () => {
-  // Composables
-  const {
-    vouchers: vouchersRef,
-    selectedVoucher: selectedVoucherRef,
-    pagination: paginationRef,
-    isLoading,
-    error,
-    fetchVouchers,
-    fetchVoucherById,
-    saveVoucher,
-    removeVoucher,
-  } = useVouchers()
+interface VoucherStoreState {
+  vouchers: Voucher[]
+  pagination: VoucherPagination | null
+  filter: VoucherFilter
+  selectedVoucher: Voucher | null
+  isLoading: boolean
+  error: string | null
+}
 
-  const notification = useNotification()
-
-  // State
-  const filter = ref<VoucherFilter>({
-    status: "",
-    startDate: "",
-    endDate: "",
-    search: "",
-    page: 1,
-    itemsPerPage: 5,
-  })
-
-  // Actions
-  const loadVouchers = async () => {
-    try {
-      const result = await fetchVouchers(filter.value)
-      return result
-    } catch (e) {
-      notification.error("Gagal memuat data voucher")
-      throw e
-    }
-  }
-
-  const setFilter = async (newFilter: Partial<VoucherFilter>) => {
-    filter.value = {
-      ...filter.value,
-      ...newFilter,
-      // Reset to page 1 when filter changes (except when explicitly changing page)
-      page: newFilter.page || 1,
-    }
-
-    return await loadVouchers()
-  }
-
-  const resetFilter = async () => {
-    filter.value = {
-      status: "",
-      startDate: "",
-      endDate: "",
-      search: "",
+export const useVoucherStore = defineStore('voucher', {
+  state: (): VoucherStoreState => ({
+    vouchers: [],
+    pagination: null,
+    filter: {
+      status: '',
       page: 1,
-      itemsPerPage: 5,
-    }
+      itemsPerPage: 10
+    },
+    selectedVoucher: null,
+    isLoading: false,
+    error: null
+  }),
 
-    return await loadVouchers()
-  }
+  actions: {
+    async loadVouchers(): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
 
-  const loadVoucherDetails = async (id: string) => {
-    try {
-      return await fetchVoucherById(id)
-    } catch (e) {
-      notification.error("Gagal memuat detail voucher")
-      throw e
-    }
-  }
+        const res = await fetchVouchers(this.filter)
+        this.vouchers = res.response.records
 
-  const updateVoucher = async (id: string, voucherData: Partial<Voucher>) => {
-    try {
-      const result = await saveVoucher({ idVoucher: id, ...voucherData })
-      notification.success("Voucher berhasil diperbarui")
-      return result
-    } catch (e) {
-      notification.error("Gagal memperbarui voucher")
-      throw e
-    }
-  }
-
-  const createVoucher = async (voucherData: Omit<Voucher, "idVoucher">) => {
-    try {
-      const result = await saveVoucher(voucherData)
-      notification.success("Voucher berhasil dibuat")
-      return result
-    } catch (e) {
-      notification.error("Gagal membuat voucher")
-      throw e
-    }
-  }
-
-  const deleteVoucher = async (id: string) => {
-    try {
-      const result = await removeVoucher(id)
-      if (result) {
-        notification.success("Voucher berhasil dihapus")
-        await loadVouchers()
+        this.pagination = {
+          page: res.response.page.batch_number,
+          totalItems: res.response.page.total_record_count,
+          totalPages: Math.ceil(res.response.page.total_record_count / res.response.page.batch_size),
+          itemsPerPage: res.response.page.batch_size
+        }
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal memuat data voucher'
+        console.error('Error loading vouchers:', error)
+      } finally {
+        this.isLoading = false
       }
-      return result
-    } catch (e) {
-      notification.error("Gagal menghapus voucher")
-      throw e
+    },
+
+    async getVoucherDetail(id: string): Promise<Voucher | null> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        const response = await getVoucherById(id)
+        this.selectedVoucher = response.response
+        return this.selectedVoucher
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal memuat detail voucher'
+        console.error('Error getting voucher detail:', error)
+        return null
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    clearSelectedVoucher(): void {
+      this.selectedVoucher = null
+    },
+
+    setFilter(filter: Partial<VoucherFilter>): void {
+      this.filter = { ...this.filter, ...filter }
+      this.loadVouchers()
+    },
+
+    resetFilter(): void {
+      this.filter = {
+        status: '',
+        page: 1,
+        itemsPerPage: 10
+      }
+      this.loadVouchers()
+    },
+
+    async createNewVoucher(data: CreateVoucherPayload): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        const result = await createVoucher(data)
+        await this.loadVouchers()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal membuat voucher'
+        console.error('Error creating voucher:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async createVoucherRaw(payload: CreateVoucherPayload): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        const result = await useApi('/voucher/admin', {
+          method: 'POST',
+          body: payload,
+          service: 'core'
+        })
+
+        await this.loadVouchers()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal create voucher raw'
+        console.error('Error creating voucher (raw):', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updateVoucher(id: string, data: Partial<Voucher>): Promise<unknown> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        const result = await updateVoucher(id, data)
+
+        if (this.selectedVoucher?.id === id) {
+          await this.getVoucherDetail(id)
+        }
+
+        await this.loadVouchers()
+        return result
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal memperbarui voucher'
+        console.error('Error updating voucher:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async deleteVoucher(id: string): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        await deleteVoucher(id)
+        this.vouchers = this.vouchers.filter(v => v.id !== id)
+
+        if (this.selectedVoucher?.id === id) {
+          this.clearSelectedVoucher()
+        }
+
+        await this.loadVouchers()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal menghapus voucher'
+        console.error('Error deleting voucher:', error)
+      } finally {
+        this.isLoading = false
+      }
     }
-  }
-
-  // Getters
-  const vouchers = computed(() => vouchersRef.value)
-  const selectedVoucher = computed(() => selectedVoucherRef.value)
-  const pagination = computed(() => paginationRef.value)
-
-  return {
-    // State
-    filter,
-    vouchers,
-    selectedVoucher,
-    pagination,
-    isLoading,
-    error,
-
-    // Actions
-    loadVouchers,
-    setFilter,
-    resetFilter,
-    loadVoucherDetails,
-    updateVoucher,
-    createVoucher,
-    deleteVoucher,
   }
 })

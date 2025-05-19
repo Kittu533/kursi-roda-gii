@@ -11,7 +11,7 @@ import type {
   CreateModelPayload,
   ModelFilter,
   ModelPagination
-} from '~/types/model'
+} from '~/types/model'  
 
 interface ModelStoreState {
   models: WheelchairModel[]
