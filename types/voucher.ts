@@ -12,6 +12,17 @@ export interface Voucher {
     status: 'active' | 'inactive' | string
   }
 }
+export interface VoucherApiSingleResponse {
+  response: {
+    data: Voucher
+  }
+  metaData: {
+    message: string
+    code: number
+    response_code: string
+  }
+}
+
 
 export interface CreateVoucherPayload {
   voucher_code: string
@@ -40,14 +51,14 @@ export interface VoucherApiListResponse {
   }
 }
 
-export interface VoucherApiSingleResponse {
-  response: Voucher
-  metaData: {
-    message: string
-    code: number
-    response_code: string
-  }
-}
+// export interface VoucherApiSingleResponse {
+//   response: Voucher
+//   metaData: {
+//     message: string
+//     code: number
+//     response_code: string
+//   }
+// }
 
 export interface VoucherFilter {
   voucher_code?: string
