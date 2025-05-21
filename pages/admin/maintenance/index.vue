@@ -1,31 +1,32 @@
-<template>
-  <div class="container mx-auto px-4 py-8">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-bold tracking-tight">Data Maintenance</h2>
-      <div class="flex items-center gap-2">
-        <NuxtLink to="/admin/maintenance/create"
-          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50">
-          <span>Tambah Maintenance</span>
-          <Plus class="w-4 h-4" />
-        </NuxtLink>
-        <ExportDropdown :data="exportData" :columns="exportColumns" title="Data Maintenance" filename="maintenance" />
-        <button class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
-          @click="showFilter = !showFilter">
-          <Filter class="w-4 h-4" />
-          <span>Filter</span>
-        </button>
+  <template>
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold tracking-tight">Data Maintenance</h2>
+        <div class="flex items-center gap-2">
+          <NuxtLink to="/admin/maintenance/create"
+            class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50">
+            <span>Tambah Maintenance</span>
+            <Plus class="w-4 h-4" />
+          </NuxtLink>
+          <ExportDropdown :data="exportData" :columns="exportColumns" title="Data Maintenance" filename="maintenance" />
+          <button class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
+            @click="showFilter = !showFilter">
+            <Filter class="w-4 h-4" />
+            <span>Filter</span>
+          </button>
+        </div>
       </div>
+
+      <DataTableFilter v-if="showFilter" :filter="filter" :fields="filterFields" @apply="applyFilter"
+        @reset="resetFilter" />
+
+      <data-table title="Data Maintenance" :headers="columns" :items="maintenances" :pagination="enhancedPagination"
+        :is-loading="isLoading" :show-export="true" :export-columns="exportColumns" :export-data="exportData"
+        export-filename="maintenance" :rows-per-page-options="[5, 10, 20, 30, 50, 100]"
+        :default-rows-per-page="itemsPerPage" @action="handleAction" @page-change="handlePageChange"
+        @rows-per-page-change="handleRowsPerPageChange" />
     </div>
-
-    <DataTableFilter v-if="showFilter" :filter="filter" :fields="filterFields" @apply="applyFilter"
-      @reset="resetFilter" />
-
-    <data-table title="Data Maintenance" :headers="columns" :items="maintenances" :pagination="enhancedPagination"
-      :is-loading="isLoading" :show-export="true" :export-columns="exportColumns" :export-data="exportData"
-      export-filename="maintenance" :rows-per-page-options="[5, 10, 20, 30, 50, 100]" :default-rows-per-page="itemsPerPage"
-      @action="handleAction" @page-change="handlePageChange" @rows-per-page-change="handleRowsPerPageChange" />
-  </div>
-</template>
+  </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
@@ -54,19 +55,23 @@ const loadData = async () => {
 };
 
 const maintenances = computed<TableItem[]>(() =>
-  maintenanceStore.maintenanceRecords.map((m, index) => ({
-    no: index + 1,
-    id: m.id,
-    model: m.wheelchair.model_id,  // Relasi untuk model kursi roda
-    serialNumber: m.wheelchair.serial_number,  // Relasi untuk nomor seri kursi roda
-    // picture: m.picture || '',  // Foto dari maintenance, pastikan relasi picture ada
-    // description: m.issue_description || '',  // Deskripsi masalah, pastikan relasi issue_description ada
-    startDate: new Date(m.start_date).toLocaleDateString("id-ID"),
-    endDate: m.end_date ? new Date(m.end_date).toLocaleDateString("id-ID") : "-",
-    status: m.maintenance_status.status === 'maintenances' ? 'Perbaikan' : 'Selesai',  // Status pemeliharaan
-    actions: "", // Anda bisa menambahkan logika aksi di sini (misalnya, edit, hapus)
-  }))
+  maintenanceStore.maintenanceRecords.map((m, index) => {
+    const statusLabel = m.maintenance_status.status === 'completed' ? 'Selesai' : 'Perbaikan';
+
+    return {
+      id: m.id,
+      model: m.wheelchair.model_id,
+      serialNumber: m.wheelchair.serial_number,
+      // picture: m.picture || '',
+      description: m.issue_description || '',
+      startDate: new Date(m.start_date).toLocaleDateString("id-ID"),
+      endDate: m.end_date ? new Date(m.end_date).toLocaleDateString("id-ID") : '-',
+      status: statusLabel,
+      actions: ''
+    };
+  })
 );
+
 
 const pagination = computed(() => maintenanceStore.pagination);
 const filter = computed(() => maintenanceStore.filter);
@@ -89,18 +94,16 @@ const enhancedPagination = computed<TablePagination>(() => {
 });
 
 const columns: TableHeader[] = [
-  { key: 'no', label: 'No' },
   { key: 'id', label: 'ID Pemeliharaan' },
   { key: 'model', label: 'Model' },
   { key: 'serialNumber', label: 'Nomor Seri' },
   {
     key: 'picture',
     label: 'Foto',
-    render: (value: string) => ({
-      component: 'img',
-      src: value,
-      alt: 'Foto Pemeliharaan',
-      class: 'w-10 h-10 object-cover rounded',
+    render: () => ({
+      component: 'span',
+      text: '.jpg',
+      class: 'text-gray-700 font-mono',
     }),
   },
   { key: 'description', label: 'Deskripsi' },
@@ -110,12 +113,11 @@ const columns: TableHeader[] = [
     key: 'status',
     label: 'Status',
     render: (value: string) => {
-      const statusLabel = value === 'Perbaikan' ? 'Perbaikan' : 'Selesai';
-      const statusClass = value === 'Perbaikan' ? 'bg-red-200 text-red-700' : 'bg-green-200 text-green-700';
+      const className = value === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
       return {
         component: 'span',
-        text: statusLabel,
-        class: `px-2 py-1 rounded-full ${statusClass}`,
+        text: value,
+        class: `px-2 py-1 rounded-full text-sm ${className}`
       };
     }
   },
@@ -131,6 +133,7 @@ const exportColumns = computed<ExportColumn[]>(() => [
   { key: 'endDate', header: 'Tanggal Selesai Pemeliharaan' },
   { key: 'status', header: 'Status' }
 ]);
+
 
 const exportData = computed(() => maintenances.value);
 

@@ -81,50 +81,63 @@ const formData = ref({
   picture: '',
   description: '',
   startDate: '',
-  endDate: null,
-  status: 'maintenances'
-})
+  endDate: '',
+  status: 'maintenances',
+  maintenance_status_id: '' // Diperlukan untuk dikirim ke backend
+});
 
 onMounted(async () => {
-    const maintenance = await maintenanceStore.getMaintenanceDetail(maintenanceId)
-    if (maintenance) {
-        formData.value = {
-            id: maintenance.id,
-            model: maintenance.wheelchair.model_id,  // Akses model_id dari wheelchair
-            serialNumber: maintenance.wheelchair.serial_number,  // Akses serial_number dari wheelchair
-            picture: maintenance.picture,  // Akses foto dari maintenance
-            description: maintenance.issue_description,  // Akses deskripsi masalah
-            startDate: maintenance.start_date,
-            endDate: maintenance.end_date || '',  // Jika endDate null, set string kosong
-            status: maintenance.maintenance_status.status  // Akses status dari maintenance_status
-        }
-    }
-})
-
-
+  const maintenance = await maintenanceStore.getMaintenanceDetail(maintenanceId);
+  if (maintenance) {
+    formData.value = {
+      id: maintenance.id,
+      model: maintenance.wheelchair.model_id,
+      serialNumber: maintenance.wheelchair.serial_number,
+      picture: maintenance.picture,
+      description: maintenance.issue_description,
+      startDate: maintenance.start_date,
+      endDate: maintenance.end_date || '',
+      status: maintenance.maintenance_status.status,
+      maintenance_status_id: maintenance.maintenance_status.id
+    };
+  }
+});
 
 const updateEndDate = () => {
-  // Jika status diubah menjadi 'Selesai', set endDate ke tanggal hari ini
   if (formData.value.status === 'completed' && !formData.value.endDate) {
-    formData.value.endDate = new Date().toISOString().split('T')[0] // Set tanggal hari ini
+    formData.value.endDate = new Date().toISOString().split('T')[0];
   }
-}
 
+  // update id status maintenance jika user ubah status
+  formData.value.maintenance_status_id = formData.value.status === 'completed'
+    ? 'b4fb7213-1f80-11f0-beb4-bceca0027c54' // ID untuk 'completed'
+    : 'b4fb6e37-1f80-11f0-beb4-bceca0027c54'; // ID untuk 'maintenances'
+};
 
 const handleSubmit = async () => {
-    try {
-        isLoading.value = true;
-        await maintenanceStore.updateMaintenance(maintenanceId, formData.value); // Update data
-        await maintenanceStore.loadMaintenance(); // Memanggil ulang data terbaru
-        alert('Data maintenance berhasil diperbarui!');
-        router.push('/admin/maintenance');
-    } catch (error) {
-        console.error(error);
-        alert('Gagal memperbarui data maintenance.');
-    } finally {
-        isLoading.value = false;
-    }
-}
+  try {
+    isLoading.value = true;
+
+    // Kirim hanya field yang boleh diubah
+    const payload = {
+      picture: formData.value.picture,
+      issue_description: formData.value.description,
+      maintenance_status_id: formData.value.maintenance_status_id,
+      end_date: formData.value.status === 'completed' ? formData.value.endDate : null
+    };
+
+    await maintenanceStore.updateMaintenance(maintenanceId, payload);
+    await maintenanceStore.loadMaintenance();
+    alert('Data maintenance berhasil diperbarui!');
+    router.push('/admin/maintenance');
+  } catch (error) {
+    console.error(error);
+    alert('Gagal memperbarui data maintenance.');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 
 </script>
 
