@@ -43,15 +43,15 @@ export const useGuideStore = defineStore('guide', {
       try {
         this.isLoading = true
         this.error = null
+
         const res = await fetchGuides(this.filter)
         this.guides = res.response.records
 
         this.pagination = {
-          currentPage: res.response.page.batch_number,
-          total: res.response.page.total_record_count,
+          page: res.response.page.batch_number,
+          totalItems: res.response.page.total_record_count,
           totalPages: Math.ceil(res.response.page.total_record_count / res.response.page.batch_size),
-          itemsPerPage: res.response.page.batch_size,
-          data: res.response.records
+          itemsPerPage: res.response.page.batch_size
         }
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Failed to load guides'
@@ -65,6 +65,7 @@ export const useGuideStore = defineStore('guide', {
       try {
         this.isLoading = true
         this.error = null
+
         const response = await getGuideById(id)
         this.selectedGuide = response.response
         return this.selectedGuide
@@ -100,6 +101,7 @@ export const useGuideStore = defineStore('guide', {
       try {
         this.isLoading = true
         this.error = null
+
         const result = await createGuide(data)
         await this.loadGuides()
         return result
@@ -116,10 +118,12 @@ export const useGuideStore = defineStore('guide', {
       try {
         this.isLoading = true
         this.error = null
-        const result = await useApi('/guides', {
+
+        const result = await useApi<unknown>('/guide', {
           method: 'POST',
           body: payload
         })
+
         await this.loadGuides()
         return result
       } catch (error) {
@@ -135,10 +139,13 @@ export const useGuideStore = defineStore('guide', {
       try {
         this.isLoading = true
         this.error = null
+
         const result = await updateGuide(id, data)
+
         if (this.selectedGuide?.id === id) {
           await this.getGuideDetail(id)
         }
+
         await this.loadGuides()
         return result
       } catch (error) {
@@ -154,9 +161,14 @@ export const useGuideStore = defineStore('guide', {
       try {
         this.isLoading = true
         this.error = null
+
         await deleteGuide(id)
         this.guides = this.guides.filter(g => g.id !== id)
-        if (this.selectedGuide?.id === id) this.clearSelectedGuide()
+
+        if (this.selectedGuide?.id === id) {
+          this.clearSelectedGuide()
+        }
+
         await this.loadGuides()
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Failed to delete guide'

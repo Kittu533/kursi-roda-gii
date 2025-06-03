@@ -1,130 +1,125 @@
-import { defineStore } from "pinia"
-import { ref, computed } from "vue"
-import type { Package, PackageFilter, PackagePagination } from "~/types/package"
-import { usePackages } from "~/composables/package/use-package"
-import { useNotification } from "~/composables/use-notification"
+import { defineStore } from 'pinia'
+import {
+  fetchAllPackages,
+  getPackageById,
+  createPackage,
+  updatePackage,
+  deletePackage
+} from '@/composables/consume-api/package.api'
 
-export const usePackageStore = defineStore("package", () => {
-  // Composables
-  const {
-    packages: packagesRef,
-    selectedPackage: selectedPackageRef,
-    pagination: paginationRef,
-    isLoading,
-    error,
-    fetchPackages,
-    fetchPackageById,
-    savePackage,
-    removePackage,
-  } = usePackages()
+import type {
+  Package,
+  PackagePayload
+} from '~/types/package'
 
-  const notification = useNotification()
+interface PackageStoreState {
+  packages: Package[]
+  selectedPackage: Package | null
+  isLoading: boolean
+  error: string | null
+}
 
-  // State
-  const filter = ref<PackageFilter>({
-    status: "",
-    page: 1,
-    itemsPerPage: 5,
-  })
+export const usePackageStore = defineStore('package', {
+  state: (): PackageStoreState => ({
+    packages: [],
+    selectedPackage: null,
+    isLoading: false,
+    error: null
+  }),
 
-  // Actions
-  const loadPackages = async () => {
-    try {
-      const result = await fetchPackages(filter.value)
-      return result
-    } catch (e) {
-      notification.error("Failed to load packages")
-      throw e
-    }
-  }
+  actions: {
+    async loadPackages(): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
 
-  const setFilter = async (newFilter: Partial<PackageFilter>) => {
-    filter.value = {
-      ...filter.value,
-      ...newFilter,
-      // Reset to page 1 when filter changes (except when explicitly changing page)
-      page: newFilter.page || 1,
-    }
-
-    return await loadPackages()
-  }
-
-  const resetFilter = async () => {
-    filter.value = {
-      status: "",
-      page: 1,
-      itemsPerPage: 5,
-    }
-
-    return await loadPackages()
-  }
-
-  const loadPackageDetails = async (id: string) => {
-    try {
-      return await fetchPackageById(id)
-    } catch (e) {
-      notification.error("Failed to load package details")
-      throw e
-    }
-  }
-
-  const updatePackage = async (id: string, packageData: Partial<Package>) => {
-    try {
-      const result = await savePackage({ id, ...packageData })
-      notification.success("Package updated successfully")
-      return result
-    } catch (e) {
-      notification.error("Failed to update package")
-      throw e
-    }
-  }
-
-  const createPackage = async (packageData: Omit<Package, "id">) => {
-    try {
-      const result = await savePackage(packageData)
-      notification.success("Package created successfully")
-      return result
-    } catch (e) {
-      notification.error("Failed to create package")
-      throw e
-    }
-  }
-
-  const deletePackage = async (id: string) => {
-    try {
-      const result = await removePackage(id)
-      if (result) {
-        notification.success("Package deleted successfully")
-        await loadPackages()
+        const res = await fetchAllPackages()
+        this.packages = res.response.filter(pkg => !pkg.deleted_at)
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal memuat data paket'
+        console.error('Error loading packages:', error)
+      } finally {
+        this.isLoading = false
       }
-      return result
-    } catch (e) {
-      notification.error("Failed to delete package")
-      throw e
+    },
+
+    async getPackageDetail(id: string): Promise<Package | null> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        const res = await getPackageById(id)
+        this.selectedPackage = res.response
+        return this.selectedPackage
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal memuat detail paket'
+        console.error('Error getting package detail:', error)
+        return null
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    clearSelectedPackage(): void {
+      this.selectedPackage = null
+    },
+
+    async createNewPackage(payload: PackagePayload): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        await createPackage(payload)
+        await this.loadPackages()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal membuat paket'
+        console.error('Error creating package:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updatePackage(id: string, data: Partial<PackagePayload>): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        await updatePackage(id, data)
+
+        if (this.selectedPackage?.id === id) {
+          await this.getPackageDetail(id)
+        }
+
+        await this.loadPackages()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal memperbarui paket'
+        console.error('Error updating package:', error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async deletePackage(id: string): Promise<void> {
+      try {
+        this.isLoading = true
+        this.error = null
+
+        await deletePackage(id)
+        this.packages = this.packages.filter(p => p.id !== id)
+
+        if (this.selectedPackage?.id === id) {
+          this.clearSelectedPackage()
+        }
+
+        await this.loadPackages()
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Gagal menghapus paket'
+        console.error('Error deleting package:', error)
+      } finally {
+        this.isLoading = false
+      }
     }
-  }
-
-  // Getters
-  const packages = computed(() => packagesRef.value)
-  const selectedPackage = computed(() => selectedPackageRef.value)
-  const pagination = computed(() => paginationRef.value)
-
-  return {
-    // State
-    filter,
-    packages,
-    selectedPackage,
-    pagination,
-    isLoading,
-    error,
-
-    // Actions
-    loadPackages,
-    setFilter,
-    resetFilter,
-    loadPackageDetails,
-    updatePackage,
-    createPackage,
-    deletePackage,
   }
 })

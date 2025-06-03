@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <DetailView 
       title="Komplain - Detail"
       card-title="Data Komplain"
@@ -59,4 +59,8 @@
       }
     }
   })
-  </script>
+  </script> -->
+
+  <template>
+    <div>sadsa</div>
+  </template>

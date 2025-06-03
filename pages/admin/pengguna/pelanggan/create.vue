@@ -2,58 +2,18 @@
   <div class="p-4">
     <!-- Breadcrumb Navigation -->
     <div class="flex items-center space-x-2 text-sm mb-4">
-      <NuxtLink
-        to="/admin/product"
-        class="text-muted-foreground hover:text-foreground"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-home"
-        >
-          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
+      <NuxtLink to="/" class="text-muted-foreground hover:text-foreground">
+        <NuxtIcon name="material-symbols:home" class="text-muted-foreground w-5 h-5" />
       </NuxtLink>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-chevron-right text-muted-foreground"
-      >
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-      <span>Pelanggan</span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-chevron-right text-muted-foreground"
-      >
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-      <span>Tambah</span>
+      <NuxtIcon name="material-symbols:chevron-right" class="text-muted-foreground w-5 h-5" />
+      <NuxtLink to="/admin/pengguna/agent" class="text-muted-foreground hover:text-foreground">
+        Pengguna
+      </NuxtLink>
+      <NuxtIcon name="material-symbols:chevron-right" class="text-muted-foreground w-5 h-5" />
+      <NuxtLink to="/admin/pengguna/agent" class="text-muted-foreground hover:text-foreground">
+        Agen
+      </NuxtLink>
     </div>
-
     <!-- Form Container -->
     <h1 class="text-xl font-bold mb-4">Data Pelanggan Baru</h1>
 
@@ -65,12 +25,8 @@
             <label class="text-sm">Nama Lengkap <span class="text-red-500">*</span></label>
           </div>
           <div class="w-3/4 flex">
-            <input
-              v-model="formData.name"
-              type="text"
-              class="w-full border rounded-md px-3 py-2"
-              required
-            />
+            <input v-model="formData.full_name" type="text" class="w-full border rounded-md px-3 py-2" required />
+
           </div>
         </div>
 
@@ -80,12 +36,7 @@
             <label class="text-sm">Email <span class="text-red-500">*</span></label>
           </div>
           <div class="w-3/4 flex">
-            <input
-              v-model="formData.email"
-              type="email"
-              class="w-full border rounded-md px-3 py-2"
-              required
-            />
+            <input v-model="formData.email" type="email" class="w-full border rounded-md px-3 py-2" required />
           </div>
         </div>
 
@@ -95,13 +46,9 @@
             <label class="text-sm">Kode Telepon <span class="text-red-500">*</span></label>
           </div>
           <div class="w-3/4 flex">
-            <input
-              v-model="formData.phone_code"
-              type="text"
-              class="w-full border rounded-md px-3 py-2"
-              placeholder="+62"
-              required
-            />
+            <input v-model="formData.phone_code" type="text"
+              class="w-full border rounded-md px-3 py-2 bg-gray-100 text-gray-600" readonly />
+
           </div>
         </div>
 
@@ -111,13 +58,8 @@
             <label class="text-sm">Nomor Telepon <span class="text-red-500">*</span></label>
           </div>
           <div class="w-3/4 flex">
-            <input
-              v-model="formData.phone"
-              type="tel"
-              class="w-full border rounded-md px-3 py-2"
-              placeholder="89696741231"
-              required
-            />
+            <input v-model="formData.phone" type="tel" class="w-full border rounded-md px-3 py-2"
+              placeholder="89696741231" required />
           </div>
         </div>
 
@@ -127,11 +69,7 @@
             <label class="text-sm">Jenis Kelamin <span class="text-red-500">*</span></label>
           </div>
           <div class="w-3/4 flex">
-            <select
-              v-model="formData.gender"
-              class="w-full border rounded-md px-3 py-2"
-              required
-            >
+            <select v-model="formData.gender" class="w-full border rounded-md px-3 py-2" required>
               <option value="">Pilih Jenis Kelamin</option>
               <option value="male">Laki-laki</option>
               <option value="female">Perempuan</option>
@@ -143,95 +81,86 @@
 
     <!-- Debug Info -->
     <div v-if="showDebug" class="mt-4 p-3 bg-gray-100 text-gray-700 rounded-md">
-      <pre class="text-xs overflow-auto">{{ JSON.stringify(formData, null, 2) }}</pre>
-      <button @click="showDebug = false" class="text-xs text-blue-500 mt-2">Hide Debug</button>
+      <pre class="text-xs overflow-auto">{{
+        JSON.stringify(formData, null, 2)
+      }}</pre>
+      <button @click="showDebug = false" class="text-xs text-blue-500 mt-2">
+        Hide Debug
+      </button>
     </div>
 
     <!-- Error Message -->
     <div v-if="errorMessage" class="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
       {{ errorMessage }}
-      <button @click="showDebug = true" class="text-xs text-blue-500 ml-2">Show Debug Info</button>
+      <button @click="showDebug = true" class="text-xs text-blue-500 ml-2">
+        Show Debug Info
+      </button>
     </div>
 
     <!-- Save Button -->
     <div class="flex justify-end mt-4">
-      <button
-        @click="handleSubmit"
-        class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-        :disabled="isLoading"
-      >
-        {{ isLoading ? 'Menyimpan...' : 'Simpan' }}
+      <button @click="handleSubmit" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+        :disabled="isLoading">
+        {{ isLoading ? "Menyimpan..." : "Simpan" }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useCustomerStore } from "~/store/customer";
 import { useRouter } from "vue-router";
 
 const customerStore = useCustomerStore();
 const router = useRouter();
+
 const isLoading = ref(false);
 const errorMessage = ref("");
 const showDebug = ref(false);
 
-// Adjusted to match the API payload format in the example
+// Form sesuai format API
 const formData = ref({
-  name: "",         // Using 'name' instead of 'full_name'
+  full_name: "",
   email: "",
-  phone_code: "+62", // Added phone_code field
+  phone_code: "+62",
   phone: "",
-  gender: ""
+  gender: "",
+  status: "ACT",
 });
 
-// Validate form before submission
 const validateForm = () => {
-  if (!formData.value.name) {
-    errorMessage.value = "Nama lengkap harus diisi";
-    return false;
-  }
-  if (!formData.value.email) {
-    errorMessage.value = "Email harus diisi";
-    return false;
-  }
-  if (!formData.value.phone_code) {
-    errorMessage.value = "Kode telepon harus diisi";
-    return false;
-  }
-  if (!formData.value.phone) {
-    errorMessage.value = "Nomor telepon harus diisi";
-    return false;
-  }
-  if (!formData.value.gender) {
-    errorMessage.value = "Jenis kelamin harus dipilih";
-    return false;
-  }
+  if (!formData.value.full_name)
+    return (errorMessage.value = "Nama lengkap harus diisi"), false;
+  if (!formData.value.email)
+    return (errorMessage.value = "Email harus diisi"), false;
+  if (!formData.value.phone)
+    return (errorMessage.value = "Nomor telepon harus diisi"), false;
+  if (!formData.value.gender)
+    return (errorMessage.value = "Jenis kelamin harus dipilih"), false;
+  if (!formData.value.status)
+    return (errorMessage.value = "Status harus dipilih"), false;
   return true;
 };
 
 const handleSubmit = async () => {
   errorMessage.value = "";
-  
-  if (!validateForm()) {
-    return;
-  }
-  
+
+  if (!validateForm()) return;
+
   try {
     isLoading.value = true;
-    
-    // No transformation needed - send formData directly as it now matches API requirements
-    await customerStore.createCustomerRaw(formData.value);
-    
+
+    await customerStore.createCustomerRaw({ ...formData.value });
+
     alert("Pelanggan berhasil ditambahkan!");
     router.push("/admin/pengguna/pelanggan");
   } catch (error: any) {
     console.error("Error creating customer:", error);
-    errorMessage.value = 
-      error?.data?.metaData?.message || 
-      error?.message || 
-      "Gagal menambahkan pelanggan. Pastikan semua data terisi dengan benar.";
+    errorMessage.value =
+      error?.data?.metaData?.message ||
+      error?.message ||
+      "Gagal menambahkan pelanggan. Pastikan data sudah benar.";
     showDebug.value = true;
   } finally {
     isLoading.value = false;

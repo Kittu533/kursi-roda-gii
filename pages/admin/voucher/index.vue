@@ -1,288 +1,199 @@
 <template>
-  <div class="space-y-4">
+  <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight">Voucher</h2>
-      </div>
-      
+      <h2 class="text-2xl font-bold tracking-tight">Voucher</h2>
+
       <div class="flex items-center gap-2">
+        <NuxtLink to="/admin/voucher/create"
+          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50">
+          <span>Tambah</span>
+          <NuxtIcon name="material-symbols:add" class="w-5 h-5" />
+        </NuxtLink>
+
+        <ExportDropdown :data="exportData" :columns="exportColumns" title="Data Voucher" filename="voucher" />
+
         <button
-          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
-          @click="router.push('/admin/voucher/create')"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-plus"
-          >
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
-          <span>Tambah Voucher</span>
-        </button>
-        <!-- Komponen ExportDropdown -->
-        <ExportDropdown
-          :data="exportData"
-          :columns="exportColumns"
-          title="Data Voucher"
-          filename="Voucher"
-        />
-        <button
-          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
-          @click="showFilter = !showFilter"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-filter"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+          class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
+          @click="showFilter = !showFilter">
+          <NuxtIcon name="material-symbols:filter-list-rounded" class="w-5 h-5" />
           <span>Filter</span>
-      </button>
+        </button>
       </div>
     </div>
 
-    <!-- Filter Panel -->
-    <VoucherFilter
-      v-if="showFilter"
-      :filter="filter"
-      @apply="applyFilter"
-      @reset="resetFilter"
-      @close="showFilter = false"
-    />
+    <VoucherFilter v-if="showFilter" :filter="filter" @apply="applyFilter" @reset="resetFilter"
+      @close="showFilter = false" />
 
-    <!-- View Toggle -->
+    <data-table title="Data Voucher" :headers="columns" :items="vouchers" :pagination="enhancedPagination"
+      :is-loading="isLoading" :show-export="true" :export-columns="exportColumns" :export-data="exportData"
+      export-filename="voucher" :rows-per-page-options="[5, 10, 20, 50, 100]" :default-rows-per-page="itemsPerPage"
+      @action="handleAction" @page-change="handlePageChange" @rows-per-page-change="handleRowsPerPageChange" />
 
-    <!-- Data Table View -->
-    <div v-if="viewMode === 'table'" class="border rounded-lg overflow-hidden bg-white shadow-sm">
-      <div class="p-4 border-b">
-        <h3 class="text-lg font-medium">Data Voucher</h3>
-      </div>
-      <div class="p-4">
-        <UiTable
-          :data="vouchers"
-          :columns="columns"
-          :loading="isLoading"
-          @action="handleAction"
-        />
-
-        <UiPagination
-          v-if="pagination"
-          :current-page="pagination.currentPage"
-          :total-pages="pagination.totalPages"
-          :total="pagination.total"
-          :items-per-page="pagination.itemsPerPage"
-          @page-change="handlePageChange"
-        />
-      </div>
-    </div>
-
-    <!-- Loading state -->
-    <div v-if="isLoading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    </div>
-
-    <!-- Empty state -->
-    <div v-if="!isLoading && vouchers.length === 0" class="text-center py-8 bg-white rounded-lg border">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="40"
-        height="40"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-ticket mx-auto mb-2 text-gray-400"
-      >
-        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-        <path d="M13 5v2" />
-        <path d="M13 17v2" />
-        <path d="M13 11v2" />
-      </svg>
-      <p class="text-gray-500">Tidak ada data voucher</p>
-    </div>
-    
-    <!-- Confirmation Modals -->
-    <ConfirmationModal
-      v-model:isOpen="isDeleteModalOpen"
-      type="delete"
+    <ConfirmationModal v-model:isOpen="isDeleteModalOpen" type="delete"
       :message="`Apakah anda yakin ingin menghapus voucher ${selectedVoucher?.kodeVoucher || ''}?`"
-      @confirm="confirmDelete"
-      @cancel="isDeleteModalOpen = false"
-    />
-    
-    <ConfirmationModal
-      v-model:isOpen="isSuccessModalOpen"
-      type="success"
-      message="Data voucher berhasil dihapus"
-      :showButtons="false"
-      @cancel="isSuccessModalOpen = false"
-    />
+      @confirm="confirmDelete" @cancel="isDeleteModalOpen = false" />
+
+    <ConfirmationModal v-model:isOpen="isSuccessModalOpen" type="success" message="Data voucher berhasil dihapus"
+      :showButtons="false" @cancel="isSuccessModalOpen = false" />
   </div>
 </template>
-
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import { useVoucherStore } from "~/store/voucher";
-import type { VoucherAction, Column } from "~/types/voucher";
-import VoucherFilter from "~/components/voucher/voucher-filter.vue";
-import UiTable from "~/components/ui-table.vue";
-import UiPagination from "~/components/ui-pagination.vue";
-import ConfirmationModal from "~/components/ui/modals/confirmation-modal.vue";
-import ExportDropdown from "~/components/export-to.vue";
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useVoucherStore } from '~/store/voucher'
+import type { Voucher } from '~/types/voucher'
+import VoucherFilter from '~/components/voucher/voucher-filter.vue'
+import ExportDropdown from '~/components/export-to.vue'
+import ConfirmationModal from '~/components/ui/modals/confirmation-modal.vue'
+import type {
+  TableHeader,
+  ExportColumn,
+  TablePagination,
+  TableItem,
+} from '~/components/data-table.vue'
 
-// Router and stores
-const router = useRouter();
-const voucherStore = useVoucherStore();
+const router = useRouter()
+const voucherStore = useVoucherStore()
 
 // State
-const showFilter = ref(false);
-const viewMode = ref<'table' | 'grid'>('table');
-const isDeleteModalOpen = ref(false);
-const isSuccessModalOpen = ref(false);
-const selectedVoucher = ref<any>(null);
+const showFilter = ref(false)
+const isDeleteModalOpen = ref(false)
+const isSuccessModalOpen = ref(false)
+const selectedVoucher = ref<any>(null)
+const itemsPerPage = ref(10)
 
 // Computed
-const vouchers = computed(() => voucherStore.vouchers);
-const pagination = computed(() => voucherStore.pagination);
-const filter = computed(() => voucherStore.filter);
-const isLoading = computed(() => voucherStore.isLoading);
+const filter = computed(() => voucherStore.filter)
+const pagination = computed(() => voucherStore.pagination)
+const isLoading = computed(() => voucherStore.isLoading)
 
-// Export columns
-const exportColumns = computed(() => {
-  return [
-    { key: "idVoucher", header: "ID Voucher" },
-    { key: "kodeVoucher", header: "Kode Voucher" },
-    { key: "nilaiVoucher", header: "Nilai Voucher" },
-    { key: "persenVoucher", header: "Persen Voucher" },
-    { key: "tanggalBerlaku", header: "Tanggal Berlaku" },
-    { key: "tanggalBerakhir", header: "Tanggal Berakhir" },
-    { key: "jumlahVoucher", header: "Jumlah Voucher" },
-    { key: "voucherTerpakai", header: "Voucher Terpakai" },
-    { key: "status", header: "Status" }
-  ];
-});
+const formatDate = (date: string): string => {
+  if (!date) return "-"
+  const d = new Date(date)
+  return d.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
 
-// Export data
-const exportData = computed(() => {
-  return vouchers.value.map(voucher => {
-    const exportVoucher = { ...voucher };
-    if (exportVoucher.status) {
-      exportVoucher.status = exportVoucher.status.charAt(0).toUpperCase() + exportVoucher.status.slice(1);
-    }
-    return exportVoucher;
-  });
-});
+const formatCurrency = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined || isNaN(Number(value))) return "-"
+  const num = typeof value === "string" ? parseFloat(value) : value
+  return `Rp${num.toLocaleString("id-ID")}`
+}
 
-// Table columns configuration
-const columns: Column[] = [
+const formatPercentage = (value: string | number): string => {
+  const num = typeof value === "string" ? parseFloat(value) : value
+  return `${num * 100}%`
+}
+
+const vouchers = computed<TableItem[]>(() =>
+  voucherStore.vouchers.map((v: Voucher) => ({
+    idVoucher: v.id,
+    kodeVoucher: v.voucher_code,
+    nilaiVoucher: formatCurrency(parseFloat(v.discount_percentage) * 100000), // bisa disesuaikan logika hitungnya
+    persenVoucher: formatPercentage(v.discount_percentage),
+    tanggalBerlaku: formatDate(v.start_date),
+    tanggalBerakhir: formatDate(v.end_date),
+  }))
+)
+
+const enhancedPagination = computed<TablePagination>(() => {
+  const pag = pagination.value
+  return {
+    currentPage: pag?.page || 1,
+    totalPages: pag?.totalPages || 1,
+    totalItems: pag?.totalItems || vouchers.value.length,
+    itemsPerPage: itemsPerPage.value,
+  }
+})
+
+// Table config
+const columns: TableHeader[] = [
   { key: "idVoucher", label: "ID Voucher" },
   { key: "kodeVoucher", label: "Kode Voucher" },
   { key: "nilaiVoucher", label: "Nilai Voucher" },
   { key: "persenVoucher", label: "Persen Voucher" },
   { key: "tanggalBerlaku", label: "Tanggal Berlaku" },
   { key: "tanggalBerakhir", label: "Tanggal Berakhir" },
-  { key: "jumlahVoucher", label: "Jumlah Voucher" },
-  { key: "voucherTerpakai", label: "Voucher Terpakai" },
-  {
-    key: "status",
-    label: "Status",
-    render: (value: string) => {
-      const statusClasses = getStatusClasses(value);
-      return {
-        component: "span",
-        class: `px-2 py-1 rounded-full text-xs font-medium ${statusClasses}`,
-        text: value.charAt(0).toUpperCase() + value.slice(1),
-      };
-    },
-  },
-  { key: "actions", label: "Aksi" }
-];
+  { key: "actions", label: "Aksi" },
+]
 
-// Helper function for status classes
-const getStatusClasses = (status: string): string => {
-  const statusMap: Record<string, string> = {
-    aktif: "bg-green-100 text-green-800",
-    nonaktif: "bg-gray-100 text-gray-800",
-    expired: "bg-red-100 text-red-800",
-    menunggu: "bg-yellow-100 text-yellow-800",
-  };
-  
-  return statusMap[status.toLowerCase()] || "bg-gray-100 text-gray-800";
-};
+const exportColumns = computed<ExportColumn[]>(() => [
+  { key: "idVoucher", header: "ID Voucher" },
+  { key: "kodeVoucher", header: "Kode Voucher" },
+  { key: "nilaiVoucher", header: "Nilai Voucher" },
+  { key: "persenVoucher", header: "Persen Voucher" },
+  { key: "tanggalBerlaku", header: "Tanggal Berlaku" },
+  { key: "tanggalBerakhir", header: "Tanggal Berakhir" },
+])
 
-// Methods
-const applyFilter = (newFilter: Partial<VoucherFilter>) => {
-  voucherStore.setFilter(newFilter);
-};
+const exportData = computed(() => vouchers.value)
 
-const resetFilter = () => {
-  voucherStore.resetFilter();
-  showFilter.value = false;
-};
-
-const handlePageChange = (page: number) => {
-  voucherStore.setFilter({ page });
-};
-
-const handleAction = async ({ type, row }: VoucherAction) => {
-  const voucher = row;
-
+// Event handlers
+const handleAction = async ({ type, row }: { type: string; row: any }) => {
+  const voucher = row
   switch (type) {
     case "view":
-      await router.push(`/admin/voucher/${voucher.idVoucher}`);
-      break;
+      await router.push(`/admin/voucher/${voucher.idVoucher}`)
+      break
     case "edit":
-      await router.push(`/admin/voucher/${voucher.idVoucher}/edit`);
-      break;
+      await router.push(`/admin/voucher/${voucher.idVoucher}/edit`)
+      break
     case "delete":
-      selectedVoucher.value = voucher;
-      isDeleteModalOpen.value = true;
-      break;
+      selectedVoucher.value = voucher
+      isDeleteModalOpen.value = true
+      break
   }
-};
+}
 
-// Confirm delete handler
+const applyFilter = (newFilter: Partial<any>) => {
+  voucherStore.setFilter({
+    ...filter.value,
+    ...newFilter,
+    page: 1,
+    itemsPerPage: itemsPerPage.value,
+  })
+}
+
+const resetFilter = () => {
+  voucherStore.resetFilter()
+  voucherStore.setFilter({ itemsPerPage: itemsPerPage.value })
+  showFilter.value = false
+}
+
+const handlePageChange = (page: number) => {
+  voucherStore.setFilter({ ...filter.value, page })
+}
+
+const handleRowsPerPageChange = (size: number) => {
+  itemsPerPage.value = size
+  voucherStore.setFilter({ ...filter.value, page: 1, itemsPerPage: size })
+}
+
 const confirmDelete = async () => {
   if (selectedVoucher.value) {
     try {
-      await voucherStore.deleteVoucher(selectedVoucher.value.idVoucher);
-      isDeleteModalOpen.value = false;
-      isSuccessModalOpen.value = true;
+      await voucherStore.deleteVoucher(selectedVoucher.value.idVoucher)
+      isDeleteModalOpen.value = false
+      isSuccessModalOpen.value = true
       setTimeout(() => {
-        isSuccessModalOpen.value = false;
-      }, 2000);
+        isSuccessModalOpen.value = false
+      }, 2000)
     } catch (error) {
-      console.error("Error deleting voucher:", error);
-      isDeleteModalOpen.value = false;
+      console.error("Error deleting voucher:", error)
+      isDeleteModalOpen.value = false
     }
   }
-};
+}
 
 // Lifecycle
 onMounted(async () => {
   try {
-    await voucherStore.loadVouchers();
+    await voucherStore.loadVouchers()
   } catch (error) {
-    console.error("Error loading vouchers:", error);
+    console.error("Error loading vouchers:", error)
   }
-});
+})
 </script>

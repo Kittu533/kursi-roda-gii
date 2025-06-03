@@ -2,55 +2,30 @@
   <div class="container mx-auto px-4 py-8">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight">Pelanggan</h2>
+        <h2 class="text-2xl font-bold tracking-tight">Guide</h2>
       </div>
 
       <div class="flex items-center gap-2">
         <NuxtLink
-          to="/admin/pengguna/pelanggan/create"
+          to="/admin/pengguna/guide/create"
           class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
         >
-          <span>Tambah </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-plus"
-          >
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
+          <span>Tambah</span>
+          <NuxtIcon name="material-symbols:add" class="w-5 h-5" />
         </NuxtLink>
+
         <ExportDropdown
           :data="exportData"
           :columns="exportColumns"
-          title="Data Pelanggan"
-          filename="pelanggan"
+          title="Data Guide"
+          filename="guide"
         />
+
         <button
           class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
           @click="showFilter = !showFilter"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-filter"
-          >
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+          <NuxtIcon name="material-symbols:filter-list-rounded" class="w-5 h-5" />
           <span>Filter</span>
         </button>
       </div>
@@ -65,15 +40,15 @@
     />
 
     <data-table
-      title="Data Pelanggan"
+      title="Data Guide"
       :headers="columns"
-      :items="customers"
+      :items="guides"
       :pagination="enhancedPagination"
       :is-loading="isLoading"
       :show-export="true"
       :export-columns="exportColumns"
       :export-data="exportData"
-      export-filename="pelanggan"
+      export-filename="guide"
       :rows-per-page-options="[5, 10, 20, 30, 50, 100]"
       :default-rows-per-page="itemsPerPage"
       @action="handleAction"
@@ -84,146 +59,142 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useCustomerStore } from "~/store/customer";
-import ExportDropdown from "~/components/export-to.vue";
-import type {
-  Customer,
-  CustomerFilter as ICustomerFilter,
-} from "~/types/customer";
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import ExportDropdown from '~/components/export-to.vue';
+import DataTableFilter from '~/components/data-table-filter.vue';
+import { useGuideStore } from '~/store/guide';
 import type {
   TableHeader,
   ExportColumn,
   TablePagination,
-  TableItem,
-} from "~/components/data-table.vue";
-import DataTableFilter from "~/components/data-table-filter.vue";
+  TableItem
+} from '~/components/data-table.vue';
 
 const router = useRouter();
-const customerStore = useCustomerStore();
+const guideStore = useGuideStore();
 
 // State
 const showFilter = ref(false);
 const isLoading = ref(false);
-const itemsPerPage = ref(10);
+const itemsPerPage = ref(5);
 
-// Fetch data on mount
+// Lifecycle
 onMounted(async () => {
   await loadData();
 });
 
-// Load data
 const loadData = async () => {
   isLoading.value = true;
   try {
-    await customerStore.loadCustomers();
+    await guideStore.loadGuides();
   } catch (error) {
-    console.error("Error loading customers:", error);
+    console.error('Error loading guides:', error);
   } finally {
     isLoading.value = false;
   }
 };
 
 // Computed
-const customers = computed<TableItem[]>(() => {
-  return customerStore.customers.map((c) => ({
-    ...c,
-    name: c.full_name,
-    phone: c.phone,
-    gender: capitalize(c.gender),
-    status: capitalize(c.status?.status || '')
+const guides = computed<TableItem[]>(() =>
+  guideStore.guides.map((g) => ({
+    ...g,
+    name: g.full_name,
+    photo: g.photo_profile ?? "/default-avatar.png",
+    email: g.email,
+    phone: g.phone,
+    ktp: g.identity_document ? "✅" : "-",
+    account: g.bank_account_number || "-",
+    status: formatStatus(g.status?.status),
   }))
-})
+);
 
 
-const pagination = computed(() => customerStore.pagination);
-const filter = computed(() => customerStore.filter);
+const pagination = computed(() => guideStore.pagination);
+const filter = computed(() => guideStore.filter);
 
 const enhancedPagination = computed<TablePagination>(() => {
   if (!pagination.value) {
     return {
       currentPage: 1,
       totalPages: 1,
-      totalItems: customers.value.length,
+      totalItems: guides.value.length,
       itemsPerPage: itemsPerPage.value,
     };
   }
   return { ...pagination.value, itemsPerPage: itemsPerPage.value };
 });
 
-// Columns
+// Table
 const columns: TableHeader[] = [
-  { key: "id", label: "ID Pelanggan" },
+  { key: "id", label: "ID Guide" },
   { key: "name", label: "Nama Lengkap" },
+  {
+    key: "photo",
+    label: "Foto Profil",
+    render: (value: string) => ({
+      component: "img",
+      src: value,
+      alt: "Foto",
+      class: "w-8 h-8 rounded-full object-cover"
+    }),
+  },
   { key: "phone", label: "Nomor Telepon" },
-  { key: "email", label: "Alamat Email" },
-  { key: "gender", label: "Jenis Kelamin" },
-  { key: "status", label: "Status Akun" },
+  { key: "email", label: "Email" },
+  { key: "ktp", label: "KTP" },
+  { key: "account", label: "Nomor Rekening" },
+  {
+    key: "status",
+    label: "Status",
+    render: (status: string) => ({
+      component: "span",
+      class:
+        status === "Aktif"
+          ? "bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs"
+          : status === "Hapus"
+            ? "bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs"
+            : "bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs",
+      text: status,
+    }),
+  },
   { key: "actions", label: "Aksi" },
 ];
 
-// Export columns & data
+// Export
 const exportColumns = computed<ExportColumn[]>(() => [
-  { key: "id", header: "ID Pelanggan" },
-  { key: "name", header: "Nama Lengkap" },
+  { key: "id", header: "ID Guide" },
+  { key: "full_name", header: "Nama Lengkap" },
   { key: "phone", header: "Nomor Telepon" },
-  { key: "email", header: "Alamat Email" },
-  { key: "gender", header: "Jenis Kelamin" },
-  { key: "status", header: "Status Akun" },
+  { key: "email", header: "Email" },
+  { key: "identity_document", header: "KTP" },
+  { key: "bank_account_number", header: "Nomor Rekening" },
+  { key: "status", header: "Status" },
 ]);
 
-const exportData = computed(() => customers.value);
+const exportData = computed(() => guideStore.guides);
 
-// Handler
-const applyFilter = (newFilter: Partial<ICustomerFilter>) => {
-  customerStore.setFilter({
-    ...filter.value,
-    ...newFilter,
-    page: 1,
-    itemsPerPage: itemsPerPage.value,
-  });
-};
-
-
-const resetFilter = () => {
-  customerStore.resetFilter();
-  customerStore.setFilter({ itemsPerPage: itemsPerPage.value });
-  showFilter.value = false;
-};
-
-const handlePageChange = (page: number) => {
-  customerStore.setFilter({ ...filter.value, page });
-};
-
-const handleRowsPerPageChange = (size: number) => {
-  itemsPerPage.value = size;
-  customerStore.setFilter({ page: 1, itemsPerPage: size });
-};
-
-const handleAction = async ({ type, row }: { type: string; row: Customer }) => {
-  try {
-    switch (type) {
-      case "view":
-        await router.push(`/admin/pengguna/pelanggan/${row.id}`);
-        break;
-      case "edit":
-        await router.push(`/admin/pengguna/pelanggan/${row.id}/edit`);
-        break;
-      case "delete":
-        if (confirm(`Apakah Anda yakin ingin menghapus ${row.name}?`)) {
-          await customerStore.deleteCustomer(row.id);
-        }
-        break;
-    }
-  } catch (error) {
-    console.error('Error handling action:', error);
-    alert('Terjadi kesalahan saat memproses aksi');
+// Helper
+const formatStatus = (status: string | undefined): string => {
+  switch (status?.toUpperCase()) {
+    case "ACT":
+      return "Aktif";
+    case "NON":
+    case "INC":
+      return "Tidak Aktif";
+    case "DEL":
+    case "HAPUS":
+    case "DELTD":
+      return "Hapus";
+    default:
+      return "-";
   }
 };
+
+
+// Filter Field
 const filterFields = [
   {
-    key: "name",
+    key: "full_name",
     label: "Nama",
     type: "text",
   },
@@ -231,11 +202,53 @@ const filterFields = [
     key: "status",
     label: "Status",
     type: "select",
-    options: ["aktif", "nonaktif", "menunggu", "dibatalkan"],
+    options: ["aktif", "nonaktif", "menunggu", "hapus"],
   },
 ];
 
-// Util
-const capitalize = (val: string): string =>
-  val.charAt(0).toUpperCase() + val.slice(1);
+// Action Handlers
+const applyFilter = (newFilter: Partial<any>) => {
+  guideStore.setFilter({
+    ...filter.value,
+    ...newFilter,
+    page: 1,
+    itemsPerPage: itemsPerPage.value,
+  });
+};
+
+const resetFilter = () => {
+  guideStore.resetFilter();
+  guideStore.setFilter({ itemsPerPage: itemsPerPage.value });
+  showFilter.value = false;
+};
+
+const handlePageChange = (page: number) => {
+  guideStore.setFilter({ ...filter.value, page });
+};
+
+const handleRowsPerPageChange = (size: number) => {
+  itemsPerPage.value = size;
+  guideStore.setFilter({ page: 1, itemsPerPage: size });
+};
+
+const handleAction = async ({ type, row }: { type: string; row: any }) => {
+  try {
+    switch (type) {
+      case "view":
+        await router.push(`/admin/pengguna/guide/${row.id}`);
+        break;
+      case "edit":
+        await router.push(`/admin/pengguna/guide/${row.id}/edit`);
+        break;
+      case "delete":
+        if (confirm(`Apakah Anda yakin ingin menghapus ${row.full_name}?`)) {
+          await guideStore.deleteGuide(row.id);
+        }
+        break;
+    }
+  } catch (error) {
+    console.error("Error handling action:", error);
+    alert("Terjadi kesalahan saat memproses aksi");
+  }
+};
 </script>

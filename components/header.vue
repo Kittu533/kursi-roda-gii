@@ -1,5 +1,5 @@
 <template>
-  <eader
+  <header
     class="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6"
   >
     <!-- Add sidebar toggle button for mobile -->
@@ -39,7 +39,7 @@
             <p class="text-sm font-medium leading-none">{{ user.name }}</p>
             <p class="text-xs text-muted-foreground mt-1">{{ user.role }}</p>
           </div>
-          <ChevronDownIcon class="h-4 w-4 text-muted-foreground" />
+          <NuxtIcon name="material-symbols:keyboard-arrow-down" class="h-4 w-4 text-muted-foreground" />
         </button>
 
         <!-- Dropdown menu -->
@@ -59,14 +59,14 @@
                 href="#profile"
                 class="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
               >
-                <UserIcon class="h-4 w-4" />
+                <NuxtIcon name="material-symbols:person" class="h-4 w-4" />
                 <span>Profile</span>
               </a>
               <a
                 href="#settings"
                 class="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
               >
-                <SettingsIcon class="h-4 w-4" />
+                <NuxtIcon name="material-symbols:settings" class="h-4 w-4" />
                 <span>Settings</span>
               </a>
             </div>
@@ -77,14 +77,14 @@
               @click="handleLogout"
               class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-500 hover:bg-accent"
             >
-              <LogOutIcon class="h-4 w-4" />
+              <NuxtIcon name="material-symbols:logout" class="h-4 w-4" />
               <span>Logout</span>
             </button>
           </div>
         </div>
       </div>
     </div>
-  </eader>
+  </header>
 </template>
 
 <script setup lang="ts">
