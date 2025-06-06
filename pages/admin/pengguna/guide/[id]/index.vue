@@ -1,60 +1,44 @@
 <template>
-  <DetailView
-    title="Guide - Detail"
-    card-title="Data Guide"
-    :breadcrumbs="breadcrumbs"
-    :fields="fields"
-    :data="formattedGuide"
-    :loading="isLoading"
-    :error="error"
-    back-button-text="Kembali"
-    save-button-text="Edit"
-    @back="router.push('/admin/pengguna/guide')"
-    @save="router.push(`/admin/pengguna/guide/${guide?.id}/edit`)"
-  >
+  <DetailView title="Guide - Detail" card-title="Data Guide" :breadcrumbs="breadcrumbs" :fields="fields"
+    :data="formattedGuide" :loading="isLoading" :error="error" back-button-text="Kembali" save-button-text="Edit"
+    @back="router.push('/admin/pengguna/guide')" @save="router.push(`/admin/pengguna/guide/${guide?.id}/edit`)">
+    <!-- FOTO PROFILE FIELD -->
     <template #field-photo_profile="{ data }">
       <div v-if="data.photo_profile">
-        <a
-          :href="data.photo_profile"
-          target="_blank"
-          class="inline-flex items-center gap-1 px-2 py-1 border rounded text-sm hover:bg-gray-50"
-        >
+        <button type="button" @click="openPreview(data.photo_profile)"
+          class="inline-flex items-center gap-1 px-2 py-1 border rounded text-sm hover:bg-gray-50">
           <Icon name="mdi:eye-outline" /> Lihat Foto
-        </a>
+        </button>
       </div>
       <div v-else class="text-gray-500 text-sm">-</div>
     </template>
-
+    <!-- KTP FIELD -->
     <template #field-identity_document="{ data }">
-      <a
-        v-if="data.identity_document"
-        :href="data.identity_document"
-        target="_blank"
-        class="text-blue-600 hover:underline text-sm"
-      >
+      <button v-if="data.identity_document" type="button" @click="openPreview(data.identity_document)"
+        class="text-blue-600 hover:underline text-sm">
         Lihat KTP
-      </a>
+      </button>
       <span v-else class="text-gray-500 text-sm">-</span>
     </template>
-
+    <!-- STATUS FIELD -->
     <template #field-status="{ data }">
-      <span
-        class="text-xs font-medium px-2 py-1 rounded-full"
-        :class="data.status?.status === 'ACT'
-          ? 'bg-green-100 text-green-700'
-          : 'bg-[#585B58] text-white'"
-      >
+      <span class="text-xs font-medium px-2 py-1 rounded-full" :class="data.status?.status === 'ACT'
+        ? 'bg-green-100 text-green-700'
+        : 'bg-[#585B58] text-white'">
         {{ formatStatus(data.status?.status) }}
       </span>
     </template>
   </DetailView>
+  <!-- Modal Preview File -->
+  <PreviewModal :show="showPreviewModal" :url="previewUrl" @close="closePreviewModal" />
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGuideStore } from '~/store/guide'
 import DetailView from '~/components/detail-view.vue'
+import PreviewModal from '~/components/preview-modal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -64,6 +48,18 @@ const guideStore = useGuideStore()
 const guide = computed(() => guideStore.selectedGuide)
 const isLoading = computed(() => guideStore.isLoading)
 const error = computed(() => guideStore.error)
+
+// Modal preview file
+const showPreviewModal = ref(false)
+const previewUrl = ref('')
+function openPreview(url: string) {
+  previewUrl.value = url
+  showPreviewModal.value = true
+}
+function closePreviewModal() {
+  showPreviewModal.value = false
+  previewUrl.value = ''
+}
 
 const breadcrumbs = [
   { text: 'Pengguna', to: '/admin/pengguna' },
@@ -111,7 +107,6 @@ const formattedGuide = computed(() => {
   }
 })
 
-// FIX: gunakan getGuideDetail sesuai store refactor
 onMounted(async () => {
   if (guideId.value) {
     try {

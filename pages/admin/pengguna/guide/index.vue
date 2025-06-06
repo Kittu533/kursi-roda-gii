@@ -6,55 +6,30 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <NuxtLink
-          to="/admin/pengguna/guide/create"
-          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
-        >
+        <NuxtLink to="/admin/pengguna/guide/create"
+          class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50">
           <span>Tambah</span>
           <NuxtIcon name="material-symbols:add" class="w-5 h-5" />
         </NuxtLink>
 
-        <ExportDropdown
-          :data="exportData"
-          :columns="exportColumns"
-          title="Data Guide"
-          filename="guide"
-        />
+        <ExportDropdown :data="exportData" :columns="exportColumns" title="Data Guide" filename="guide" />
 
         <button
           class="bg-white border px-[10px] py-[10px] rounded-[10px] w-[97px] h-[39px] flex items-center gap-2 hover:bg-gray-50"
-          @click="showFilter = !showFilter"
-        >
+          @click="showFilter = !showFilter">
           <NuxtIcon name="material-symbols:filter-list-rounded" class="w-5 h-5" />
           <span>Filter</span>
         </button>
       </div>
     </div>
 
-    <DataTableFilter
-      v-if="showFilter"
-      :filter="filter"
-      :fields="filterFields"
-      @apply="applyFilter"
-      @reset="resetFilter"
-    />
+    <DataTableFilter v-if="showFilter" :filter="filter" :fields="filterFields" @apply="applyFilter"
+      @reset="resetFilter" />
 
-    <data-table
-      title="Data Guide"
-      :headers="columns"
-      :items="guides"
-      :pagination="enhancedPagination"
-      :is-loading="isLoading"
-      :show-export="true"
-      :export-columns="exportColumns"
-      :export-data="exportData"
-      export-filename="guide"
-      :rows-per-page-options="[5, 10, 20, 30, 50, 100]"
-      :default-rows-per-page="itemsPerPage"
-      @action="handleAction"
-      @page-change="handlePageChange"
-      @rows-per-page-change="handleRowsPerPageChange"
-    />
+    <data-table title="Data Guide" :headers="columns" :items="guides" :pagination="enhancedPagination"
+      :is-loading="isLoading" :show-export="true" :export-columns="exportColumns" :export-data="exportData"
+      export-filename="guide" :rows-per-page-options="[5, 10, 20, 30, 50, 100]" :default-rows-per-page="itemsPerPage"
+      @action="handleAction" @page-change="handlePageChange" @rows-per-page-change="handleRowsPerPageChange" />
   </div>
 </template>
 
@@ -100,49 +75,17 @@ const guides = computed<TableItem[]>(() =>
   guideStore.guides.map((g) => ({
     ...g,
     name: g.full_name,
-    photo: g.photo_profile ?? "/default-avatar.png",
-    email: g.email,
     phone: g.phone,
-    ktp: g.identity_document ? "✅" : "-",
-    account: g.bank_account_number || "-",
+    email: g.email,
     status: formatStatus(g.status?.status),
   }))
 );
 
-
-const pagination = computed(() => guideStore.pagination);
-const filter = computed(() => guideStore.filter);
-
-const enhancedPagination = computed<TablePagination>(() => {
-  if (!pagination.value) {
-    return {
-      currentPage: 1,
-      totalPages: 1,
-      totalItems: guides.value.length,
-      itemsPerPage: itemsPerPage.value,
-    };
-  }
-  return { ...pagination.value, itemsPerPage: itemsPerPage.value };
-});
-
 // Table
 const columns: TableHeader[] = [
-  { key: "id", label: "ID Guide" },
   { key: "name", label: "Nama Lengkap" },
-  {
-    key: "photo",
-    label: "Foto Profil",
-    render: (value: string) => ({
-      component: "img",
-      src: value,
-      alt: "Foto",
-      class: "w-8 h-8 rounded-full object-cover"
-    }),
-  },
   { key: "phone", label: "Nomor Telepon" },
   { key: "email", label: "Email" },
-  { key: "ktp", label: "KTP" },
-  { key: "account", label: "Nomor Rekening" },
   {
     key: "status",
     label: "Status",
@@ -159,19 +102,6 @@ const columns: TableHeader[] = [
   },
   { key: "actions", label: "Aksi" },
 ];
-
-// Export
-const exportColumns = computed<ExportColumn[]>(() => [
-  { key: "id", header: "ID Guide" },
-  { key: "full_name", header: "Nama Lengkap" },
-  { key: "phone", header: "Nomor Telepon" },
-  { key: "email", header: "Email" },
-  { key: "identity_document", header: "KTP" },
-  { key: "bank_account_number", header: "Nomor Rekening" },
-  { key: "status", header: "Status" },
-]);
-
-const exportData = computed(() => guideStore.guides);
 
 // Helper
 const formatStatus = (status: string | undefined): string => {
@@ -190,6 +120,33 @@ const formatStatus = (status: string | undefined): string => {
   }
 };
 
+const pagination = computed(() => guideStore.pagination);
+const filter = computed(() => guideStore.filter);
+
+const enhancedPagination = computed<TablePagination>(() => {
+  if (!pagination.value) {
+    return {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: guides.value.length,
+      itemsPerPage: itemsPerPage.value,
+    };
+  }
+  return { ...pagination.value, itemsPerPage: itemsPerPage.value };
+});
+
+// Export TO PDF/EXCEL
+const exportColumns = computed<ExportColumn[]>(() => [
+  { key: "id", header: "ID Guide" },
+  { key: "full_name", header: "Nama Lengkap" },
+  { key: "phone", header: "Nomor Telepon" },
+  { key: "email", header: "Email" },
+  { key: "identity_document", header: "KTP" },
+  { key: "bank_account_number", header: "Nomor Rekening" },
+  { key: "status", header: "Status" },
+]);
+
+const exportData = computed(() => guideStore.guides);
 
 // Filter Field
 const filterFields = [

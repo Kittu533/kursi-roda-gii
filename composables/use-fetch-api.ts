@@ -3,7 +3,7 @@ export interface ApiRequestOptions {
   query?: Record<string, unknown>
   body?: BodyInit | null  // Tipe BodyInit lebih tepat digunakan untuk body
   headers?: HeadersInit
-  service?: 'core' | 'masterdata' | 'auth' | 'log' // Menambahkan service seperti 'core', 'auth', dsb
+  service?: 'core' | 'masterdata' | 'auth' | 'file' // Changed 'log' to 'file'
 }
 
 export const useApi = async <T>(url: string, options: ApiRequestOptions = {}): Promise<T> => {
@@ -14,7 +14,7 @@ export const useApi = async <T>(url: string, options: ApiRequestOptions = {}): P
     core: config.public.coreServiceBaseUrl,
     masterdata: config.public.masterdataServiceBaseUrl,
     auth: config.public.authenticationServiceBaseUrl,
-    log: config.public.logServiceBaseUrl
+    file: config.public.fileServiceBaseUrl // Changed from logServiceBaseUrl to fileServiceBaseUrl
   }
 
   // Pilih base URL sesuai dengan service yang ditentukan

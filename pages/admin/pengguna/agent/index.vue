@@ -100,10 +100,8 @@ const agents = computed<TableItem[]>(() =>
       1 +
       ((pagination.value?.currentPage || 1) - 1) *
         (pagination.value?.itemsPerPage || 10),
-    id: a.id,
     name: a.full_name,
     photo: "*jpg", // atau a.photo_profile ?? '/default-avatar.png'
-    phone: a.phone,
     location: a.location ?? "-",
     open_time: a.open_time ?? "-",
     close_time: a.close_time ?? "-",
@@ -132,10 +130,8 @@ const enhancedPagination = computed<TablePagination>(() => {
 });
 
 const columns: TableHeader[] = [
-  { key: "id", label: "ID Agen" },
   { key: "name", label: "Nama Lengkap" },
   { key: "photo", label: "Foto Profil" },
-  { key: "phone", label: "Nomor Telepon" },
   { key: "location", label: "Lokasi" },
   { key: "open_time", label: "Jam Buka" },
   { key: "close_time", label: "Jam Tutup" },
@@ -174,9 +170,7 @@ const formatStatus = (status: string | undefined) => {
   }
 };
 const exportColumns = computed<ExportColumn[]>(() => [
-  { key: "id", header: "ID Agen" },
   { key: "full_name", header: "Nama Lengkap" },
-  { key: "phone", header: "Nomor Telepon" },
   { key: "location", header: "Lokasi" },
   { key: "open_time", header: "Jam Buka" },
   { key: "close_time", header: "Jam Tutup" },

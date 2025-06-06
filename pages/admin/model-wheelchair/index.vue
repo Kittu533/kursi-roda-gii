@@ -60,17 +60,18 @@ const loadData = async () => {
 
 const models = computed<TableItem[]>(() =>
   modelStore.models.map((m, index) => ({
-    no: index + 1,
-    id: m.id,
-    name: m.name,
+    id: m.id, // <-- WAJIB!
+    name: m.model,
     photo: m.picture,
     stock: m.stock,
-    price: m.price,
-    maxWeight: m.max_weight,
-    batteryCapacity: m.battery_capacity,
+    price: formatRupiah(m.price),
+    maxWeight: formatWeight(m.max_weight),
+    batteryCapacity: formatBatteryLife(m.battery_capacity),
     status: m.guide_compatible ? 'aktif' : 'nonaktif'
   }))
 )
+
+
 
 const pagination = computed(() => modelStore.pagination)
 const filter = computed(() => modelStore.filter)
@@ -93,30 +94,17 @@ const enhancedPagination = computed<TablePagination>(() => {
 })
 
 const columns: TableHeader[] = [
-  { key: 'no', label: 'No' },
-  { key: 'id', label: 'ID Model' },
-  { key: 'name', label: 'Model' },
-  {
-    key: 'photo',
-    label: 'Foto',
-    render: (value: string) => ({
-      component: 'img',
-      src: value,
-      alt: 'Foto Model',
-      class: 'w-10 h-10 object-cover rounded'
-    })
-  },
+  { key: 'name', label: 'Name Model' },
   { key: 'stock', label: 'Stok' },
-  { key: 'price', label: 'Harga' },
-  { key: 'maxWeight', label: 'Max Berat' },
-  { key: 'batteryCapacity', label: 'Daya Baterai' },
+  { key: 'price', label: 'Harga (Rp)' },
+  { key: 'maxWeight', label: 'Max Berat (Kg)' },
+  { key: 'batteryCapacity', label: 'Daya Baterai (mAh)' },
   { key: 'status', label: 'Status Guide' },
   { key: 'actions', label: 'Aksi' }
 ]
 
 const exportColumns = computed<ExportColumn[]>(() => [
-  { key: 'id', header: 'ID Model' },
-  { key: 'name', header: 'Model' },
+  { key: 'name', header: 'Nama Model' },
   { key: 'stock', header: 'Stok' },
   { key: 'price', header: 'Harga' },
   { key: 'maxWeight', header: 'Max Berat' },
@@ -175,4 +163,19 @@ const filterFields = [
     options: ['aktif', 'nonaktif']
   }
 ]
+
+
+// format
+function formatRupiah(value: number) {
+  return 'Rp' + value.toLocaleString('id-ID');
+}
+
+function formatWeight(value: number) {
+  return value + ' kg';
+}
+
+function formatBatteryLife(value: number) {
+  return value + ' jam';
+}
+
 </script>

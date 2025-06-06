@@ -11,7 +11,7 @@ import type {
   CreateModelPayload,
   ModelFilter,
   ModelPagination
-} from '~/types/model'  
+} from '~/types/model'
 
 interface ModelStoreState {
   models: WheelchairModel[]
@@ -30,7 +30,7 @@ export const useModelStore = defineStore('model', {
       name: '',
       guide_compatible: '',
       page: 1,
-      itemsPerPage: 5
+      itemsPerPage: 10 // <- konsisten dengan wheelchair
     },
     selectedModel: null,
     isLoading: false,
@@ -44,7 +44,6 @@ export const useModelStore = defineStore('model', {
         this.error = null
         const res = await fetchModels(this.filter)
         this.models = res.response.records
-
         this.pagination = {
           currentPage: res.response.page.batch_number,
           total: res.response.page.total_record_count,
@@ -53,8 +52,8 @@ export const useModelStore = defineStore('model', {
           data: res.response.records
         }
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to load models'
-        console.error('Error loading models:', error)
+        this.error = error instanceof Error ? error.message : 'Gagal memuat data model'
+        console.error(error)
       } finally {
         this.isLoading = false
       }
@@ -68,8 +67,8 @@ export const useModelStore = defineStore('model', {
         this.selectedModel = res.response
         return this.selectedModel
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to get model detail'
-        console.error('Error getting model detail:', error)
+        this.error = error instanceof Error ? error.message : 'Gagal memuat detail model'
+        console.error(error)
         return null
       } finally {
         this.isLoading = false
@@ -90,40 +89,38 @@ export const useModelStore = defineStore('model', {
         name: '',
         guide_compatible: '',
         page: 1,
-        itemsPerPage: 5
+        itemsPerPage: 10 // <- konsisten
       }
       this.loadModels()
     },
 
-    async createNewModel(data: CreateModelPayload): Promise<unknown> {
+    async createNewModel(data: CreateModelPayload): Promise<void> {
       try {
         this.isLoading = true
         this.error = null
-        const result = await createModel(data)
+        await createModel(data)
         await this.loadModels()
-        return result
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to create model'
-        console.error('Error creating model:', error)
+        this.error = error instanceof Error ? error.message : 'Gagal membuat model'
+        console.error(error)
         throw error
       } finally {
         this.isLoading = false
       }
     },
 
-    async updateModel(id: string, data: Partial<CreateModelPayload>): Promise<unknown> {
+    async updateModel(id: string, data: Partial<CreateModelPayload>): Promise<void> {
       try {
         this.isLoading = true
         this.error = null
-        const result = await updateModel(id, data)
+        await updateModel(id, data)
         if (this.selectedModel?.id === id) {
           await this.getModelDetail(id)
         }
         await this.loadModels()
-        return result
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to update model'
-        console.error('Error updating model:', error)
+        this.error = error instanceof Error ? error.message : 'Gagal memperbarui model'
+        console.error(error)
         throw error
       } finally {
         this.isLoading = false
@@ -139,11 +136,12 @@ export const useModelStore = defineStore('model', {
         if (this.selectedModel?.id === id) this.clearSelectedModel()
         await this.loadModels()
       } catch (error) {
-        this.error = error instanceof Error ? error.message : 'Failed to delete model'
-        console.error('Error deleting model:', error)
+        this.error = error instanceof Error ? error.message : 'Gagal menghapus model'
+        console.error(error)
       } finally {
         this.isLoading = false
       }
     }
   }
 })
+ 
