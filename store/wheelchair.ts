@@ -44,7 +44,18 @@ export const useWheelchairStore = defineStore('wheelchair', {
             try {
                 this.isLoading = true
                 this.error = null
-                const res = await fetchWheelchairs(this.filter)
+
+                // --- MAP model_id ke search untuk API ---
+                const params: Record<string, any> = {
+                    ...this.filter,
+                }
+                // Kalau ada model_id, kirim ke param search dan hapus dari object params
+                if (params.model_id) {
+                    params.search = params.model_id
+                    delete params.model_id
+                }
+
+                const res = await fetchWheelchairs(params)
                 this.wheelchairs = res.response.records
 
                 this.pagination = {

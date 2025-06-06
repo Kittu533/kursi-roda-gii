@@ -104,10 +104,12 @@ const customers = computed<TableItem[]>(() => {
     ...c,
     name: c.full_name,
     phone: c.phone,
+    email: c.email,
     gender: formatGender(c.gender),
     status: formatStatus(c.status?.status),
   }));
 });
+
 
 const pagination = computed(() => customerStore.pagination);
 const filter = computed(() => customerStore.filter);
@@ -126,7 +128,6 @@ const enhancedPagination = computed<TablePagination>(() => {
 
 // Columns
 const columns: TableHeader[] = [
-  { key: "id", label: "ID Pelanggan" },
   { key: "name", label: "Nama Lengkap" },
   { key: "phone", label: "Nomor Telepon" },
   { key: "email", label: "Alamat Email" },
@@ -142,8 +143,7 @@ const columns: TableHeader[] = [
           : status === "Hapus"
             ? "bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs"
             : "bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs",
-      children: status, // ❌ tidak digunakan di slot
-      text: status, // ✅ inilah yang dicari di data-table.vue
+      text: status,
     }),
   },
   { key: "actions", label: "Aksi" },
@@ -151,13 +151,13 @@ const columns: TableHeader[] = [
 
 // Export columns & data
 const exportColumns = computed<ExportColumn[]>(() => [
-  { key: "id", header: "ID Pelanggan" },
   { key: "name", header: "Nama Lengkap" },
   { key: "phone", header: "Nomor Telepon" },
   { key: "email", header: "Alamat Email" },
   { key: "gender", header: "Jenis Kelamin" },
   { key: "status", header: "Status Akun" },
 ]);
+
 
 const exportData = computed(() => customers.value);
 

@@ -9,7 +9,9 @@ import {
 
 import type {
   Package,
-  PackagePayload
+  PackagePayload,
+  PackageWheelchair,
+  PackageWheelchairItem,
 } from '~/types/package'
 
 interface PackageStoreState {
@@ -63,7 +65,6 @@ export const usePackageStore = defineStore('package', {
     clearSelectedPackage(): void {
       this.selectedPackage = null
     },
-
     async createNewPackage(payload: PackagePayload): Promise<void> {
       try {
         this.isLoading = true
@@ -100,6 +101,8 @@ export const usePackageStore = defineStore('package', {
         this.isLoading = false
       }
     },
+
+
 
     async deletePackage(id: string): Promise<void> {
       try {

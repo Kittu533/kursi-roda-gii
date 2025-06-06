@@ -26,9 +26,18 @@
                 <input v-model="formData.model" type="text" class="form-input" required />
             </div>
 
+            <!-- Upload gambar -->
             <div>
                 <label class="text-sm block mb-1">Gambar <span class="text-red-500">*</span></label>
-                <input v-model="formData.picture" type="url" class="form-input" required />
+                <input type="file" accept="image/png, image/jpeg" @change="onFileChange" class="form-input" required />
+                <div v-if="formData.picture" class="mt-2">
+                    <img :src="formData.picture" alt="Preview Gambar" class="h-24 rounded shadow border" />
+                    <div>
+                        <a :href="formData.picture" target="_blank" class="text-blue-600 hover:underline text-xs">
+                            Lihat gambar
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div>
@@ -80,9 +89,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useModelStore } from '~/store/model'
+import { useFileServiceStore } from '~/store/file-service'
 
 const router = useRouter()
 const modelStore = useModelStore()
+const fileService = useFileServiceStore()
 
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -90,13 +101,29 @@ const errorMessage = ref('')
 const formData = ref({
     name: '',
     model: '',
-    picture: '',
+    picture: '', // ini akan diisi URL hasil upload
     stock: 0,
     max_weight: 0,
     guide_compatible: '',
     battery_capacity: 0,
     price: 0
 })
+
+// Handler upload file gambar
+async function onFileChange(event: Event) {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) return
+    try {
+        isLoading.value = true
+        const url = await fileService.uploadFileBase64(file)
+        formData.value.picture = url
+    } catch (e) {
+        errorMessage.value = 'Gagal upload gambar: ' + e
+    } finally {
+        isLoading.value = false
+    }
+}
 
 const validateForm = () => {
     const f = formData.value

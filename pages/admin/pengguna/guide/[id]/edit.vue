@@ -29,30 +29,29 @@
 
     <!-- Form -->
     <form class="bg-white rounded-md p-4 space-y-4" @submit.prevent="saveGuide">
-      <div
-        class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
-        v-for="(label, key) in fieldLabels"
-        :key="key"
-      >
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center" v-for="(label, key) in fieldLabels" :key="key">
         <label class="text-sm font-medium">{{ label }}</label>
 
-        <input
-          v-if="key !== 'status'"
-          v-model="formData[key]"
-          :type="key.includes('email') ? 'email' : 'text'"
-          class="md:col-span-3 border rounded-md px-3 py-2 w-full"
-        />
+        <!-- File input for photo_profile & identity_document -->
+        <div v-if="key === 'photo_profile' || key === 'identity_document'"
+          class="md:col-span-3 flex items-center gap-3">
+          <input type="file" accept="image/png, image/jpeg,application/pdf" @change="onFileChange($event, key)"
+            class="border rounded-md px-3 py-2 w-full" />
 
-        <select
-          v-else
-          v-model="formData.status"
-          class="md:col-span-3 border rounded-md px-3 py-2 w-full"
-        >
+        </div>
+
+        <!-- Select status -->
+        <select v-else-if="key === 'status'" v-model="formData.status"
+          class="md:col-span-3 border rounded-md px-3 py-2 w-full">
           <option value="">Pilih Status</option>
           <option value="ACT">Aktif</option>
           <option value="INC">Nonaktif</option>
           <option value="DEL">Dihapus</option>
         </select>
+
+        <!-- Input text/email -->
+        <input v-else v-model="formData[key]" :type="key.includes('email') ? 'email' : 'text'"
+          class="md:col-span-3 border rounded-md px-3 py-2 w-full" />
       </div>
 
       <div class="flex justify-end pt-4">
@@ -68,43 +67,60 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGuideStore } from '~/store/guide';
+import { useFileServiceStore } from '~/store/file-service';
 
 const route = useRoute();
 const router = useRouter();
 const guideStore = useGuideStore();
+const fileService = useFileServiceStore();
 
 const guideId = computed(() => route.params.id as string);
 const isEditing = computed(() => guideId.value && guideId.value !== 'new');
 const isLoading = computed(() => guideStore.isLoading);
 const error = computed(() => guideStore.error);
 
-// Initial Form State
+// Pastikan pakai key "photo_profile"
 const formData = ref({
-  name: '',
+  full_name: '',
   email: '',
   phone: '',
   emergency_phone_number: '',
-  profile_photo: '',
+  photo_profile: '',
   identity_document: '',
   bank_account_number: '',
-  status: '' // WAJIB ADA
+  status: ''
 });
 
-
-
 const fieldLabels: Record<string, string> = {
-  name: 'Nama Lengkap',
+  full_name: 'Nama Lengkap',
   email: 'Email',
   phone: 'Nomor Telepon',
   emergency_phone_number: 'No. Darurat',
-  profile_photo: 'Foto Profil (URL)',
-  identity_document: 'KTP (URL)',
+  photo_profile: 'Foto Profil',
+  identity_document: 'KTP',
   bank_account_number: 'Nomor Rekening',
   status: 'Status'
 };
 
+// File upload handler (mirip create)
+async function onFileChange(event: Event, key: string) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+  try {
+    const url = await fileService.uploadFileBase64(file);
+    formData.value[key] = url;
+  } catch (e) {
+    alert('Gagal upload file: ' + e);
+  }
+}
+
 // Save Action
 const saveGuide = async () => {
+  if (!formData.value.photo_profile || !formData.value.identity_document) {
+    alert('Foto profil dan KTP wajib di-upload!');
+    return;
+  }
   try {
     await guideStore.updateGuide(guideId.value, { ...formData.value });
     router.push('/admin/pengguna/guide');
@@ -113,16 +129,6 @@ const saveGuide = async () => {
   }
 };
 
-function convertStatus(code: string): string {
-  switch (code.toUpperCase()) {
-    case 'ACT': return 'active';
-    case 'INC': return 'inactive';
-    case 'DEL':
-    case 'HAPUS': return 'deleted';
-    default: return '';
-  }
-}
-
 // Load existing data
 onMounted(async () => {
   if (isEditing.value) {
@@ -130,13 +136,14 @@ onMounted(async () => {
       const guide = await guideStore.getGuideDetail(guideId.value);
       if (guide) {
         formData.value = {
-          name: guide.full_name,
+          full_name: guide.full_name,
           email: guide.email,
           phone: guide.phone,
           emergency_phone_number: guide.emergency_phone_number,
-          profile_photo: guide.photo_profile,
+          photo_profile: guide.photo_profile,
           identity_document: guide.identity_document,
           bank_account_number: guide.bank_account_number,
+          status: guide.status?.status || '' // sesuaikan sesuai struktur data backend
         };
       }
     } catch (err) {
@@ -144,5 +151,4 @@ onMounted(async () => {
     }
   }
 });
-
 </script>
