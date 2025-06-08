@@ -1,4 +1,4 @@
-// ~/consume-api/voucher-status.api.ts
+// consume-api/voucher-status.api.ts
 import { useApi } from '@/composables/use-fetch-api'
 
 export interface VoucherStatus {
@@ -6,18 +6,22 @@ export interface VoucherStatus {
   status: string
 }
 
-interface VoucherStatusApiResponse {
+export interface VoucherStatusApiResponse {
   response: {
     records: VoucherStatus[]
   }
+  metaData: {
+    message: string
+    code: number
+    response_code: string
+  }
 }
 
-// Ambil semua status voucher
-export const fetchVoucherStatusesApi = async (): Promise<VoucherStatus[]> => {
-  const { response } = await useApi<VoucherStatusApiResponse>('/voucher-status/admin', {
+const BASE_URL = '/voucher-status/admin'
+
+export const fetchVoucherStatuses = async () => {
+  return await useApi<VoucherStatusApiResponse>(BASE_URL, {
     method: 'GET',
     service: 'masterdata'
   })
-
-  return response.records || []
 }

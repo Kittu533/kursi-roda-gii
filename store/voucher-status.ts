@@ -1,27 +1,33 @@
-// ~/stores/voucher-status.ts
 import { defineStore } from 'pinia'
-import { fetchVoucherStatusesApi, type VoucherStatus } from '~/composables/consume-api/voucher-status.api'
+import { fetchVoucherStatuses } from '@/composables/consume-api/voucher-status.api'
+import type { VoucherStatus } from '@/composables/consume-api/voucher-status.api'
+
+interface VoucherStatusState {
+  statuses: VoucherStatus[]
+  isLoading: boolean
+  error: string | null
+}
 
 export const useVoucherStatusStore = defineStore('voucherStatus', {
-  state: () => ({
-    statuses: [] as VoucherStatus[],
-    isLoaded: false
+  state: (): VoucherStatusState => ({
+    statuses: [],
+    isLoading: false,
+    error: null
   }),
 
   actions: {
-    async fetchStatuses() {
-      if (this.isLoaded) return
+    async loadVoucherStatuses() {
+      this.isLoading = true
+      this.error = null
       try {
-        this.statuses = await fetchVoucherStatusesApi()
-        this.isLoaded = true
-      } catch (error) {
-        console.error('Gagal mengambil daftar voucher status:', error)
+        const res = await fetchVoucherStatuses()
+        this.statuses = res.response.records
+      } catch (error: any) {
+        this.error = error?.metaData?.message || error?.message || 'Gagal memuat status voucher'
+        this.statuses = []
+      } finally {
+        this.isLoading = false
       }
-    },
-
-    getStatusIdByName(name: string): string | null {
-      const found = this.statuses.find(s => s.status.toLowerCase() === name.toLowerCase())
-      return found?.id ?? null
     }
   }
 })

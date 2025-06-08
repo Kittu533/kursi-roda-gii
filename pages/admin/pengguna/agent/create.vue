@@ -53,16 +53,36 @@
           <option value="DEL">Dihapus</option>
         </select>
 
-        <!-- Input text/email -->
+        <!-- Map Picker untuk latitude/longitude -->
+        <div v-else-if="key === 'latitude'" class="md:col-span-3 flex items-center gap-2">
+          <input v-model="formData.latitude" type="text" readonly placeholder="Latitude"
+            class="w-36 border rounded-md px-3 py-2" />
+          <input v-model="formData.longitude" type="text" readonly placeholder="Longitude"
+            class="w-36 border rounded-md px-3 py-2" />
+          <button type="button" class="bg-blue-500 text-white px-3 py-1 rounded" @click="() => {
+            console.log('Opening map modal');
+            try {
+              openMapModal();
+              console.log('Map modal opened successfully');
+            } catch (err) {
+              console.error('Error opening map modal:', err);
+            }
+          }">
+            Pilih di Peta
+          </button>
+        </div>
+
+        <!-- Input biasa -->
         <input v-else v-model="formData[key]" :type="key.includes('time')
-            ? 'time'
-            : key === 'email'
-              ? 'email'
-              : key === 'password'
-                ? 'password'
-                : 'text'
+          ? 'time'
+          : key === 'email'
+            ? 'email'
+            : key === 'password'
+              ? 'password'
+              : 'text'
           " class="md:col-span-3 border rounded-md px-3 py-2 w-full" />
       </div>
+
       <div class="flex justify-end pt-4">
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
           Simpan
@@ -72,6 +92,14 @@
         {{ errorMessage }}
       </div>
     </form>
+    <!-- Modal Picker Map -->
+    <MapPickerModal v-if="showMapModal" :show="showMapModal"
+      :initLat="formData.latitude ? Number(formData.latitude) : undefined"
+      :initLng="formData.longitude ? Number(formData.longitude) : undefined" @selected="onLocationSelected"
+      @close="showMapModal = false" />
+
+
+
   </div>
 </template>
 
@@ -80,6 +108,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAgentStore } from '~/store/agent';
 import { useFileServiceStore } from '~/store/file-service';
+// Import modal map
+import MapPickerModal from '@/components/map-picker-modal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -89,6 +119,8 @@ const fileService = useFileServiceStore();
 const agentId = computed(() => route.params.id as string);
 const isLoading = computed(() => agentStore.isLoading);
 const error = computed(() => agentStore.error);
+
+const showMapModal = ref(false);
 
 const formData = ref({
   full_name: '',
@@ -124,23 +156,7 @@ const fieldLabels: Record<string, string> = {
 
 const errorMessage = ref('');
 
-function validateForm(): boolean {
-  // Jika wajib, cek juga photo_profile
-  if (!formData.value.photo_profile) {
-    errorMessage.value = 'Foto profil wajib di-upload.';
-    return false;
-  }
-  for (const [key, value] of Object.entries(formData.value)) {
-    if (key !== 'password' && !value) { // password boleh kosong saat edit
-      errorMessage.value = `Field "${fieldLabels[key] || key}" tidak boleh kosong.`;
-      return false;
-    }
-  }
-  errorMessage.value = '';
-  return true;
-}
-
-// File upload logic mirip guide
+// Upload file service
 async function onFileChange(event: Event, key: string) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
@@ -151,6 +167,37 @@ async function onFileChange(event: Event, key: string) {
   } catch (e) {
     alert('Gagal upload file: ' + e);
   }
+}
+
+// Buka map modal
+function openMapModal() {
+  showMapModal.value = true;
+}
+
+// Callback setelah pilih lokasi di peta
+function onLocationSelected({ lat, lng, address }) {
+  formData.value.latitude = lat
+  formData.value.longitude = lng
+  formData.value.location = address
+}
+
+
+
+
+// Validasi dan submit
+function validateForm() {
+  if (!formData.value.photo_profile) {
+    errorMessage.value = 'Foto profil wajib di-upload.';
+    return false;
+  }
+  for (const [key, value] of Object.entries(formData.value)) {
+    if (key !== 'password' && !value) {
+      errorMessage.value = `Field "${fieldLabels[key] || key}" tidak boleh kosong.`;
+      return false;
+    }
+  }
+  errorMessage.value = '';
+  return true;
 }
 
 async function handleSubmit() {
@@ -164,7 +211,7 @@ async function handleSubmit() {
   }
 }
 
-// Load existing agent data on mount
+// Load existing data if edit
 onMounted(async () => {
   if (agentId.value) {
     try {
@@ -176,7 +223,7 @@ onMounted(async () => {
           username: agent.username || '',
           phone_code: agent.phone_code || '+62',
           phone: agent.phone || '',
-          password: '', // kosongkan saat edit!
+          password: '',
           location: agent.location || '',
           open_time: agent.open_time || '',
           close_time: agent.close_time || '',

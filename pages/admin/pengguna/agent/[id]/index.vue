@@ -1,18 +1,17 @@
 <template>
-  <DetailView
-    title="Agen - Detail"
-    card-title="Data Agen"
-    :breadcrumbs="breadcrumbs"
-    :fields="fields"
-    :data="formattedAgent"
-    :loading="isLoading"
-    :error="error"
-    back-button-text="Kembali"
-    save-button-text="Edit"
-    @back="router.push('/admin/pengguna/agent')"
-    @save="router.push(`/admin/pengguna/agent/${agent?.id}/edit`)"
-  />
+  <DetailView title="Agen - Detail" card-title="Data Agen" :breadcrumbs="breadcrumbs" :fields="fields"
+    :data="formattedAgent" :loading="isLoading" :error="error" back-button-text="Kembali" save-button-text="Edit"
+    @back="router.push('/admin/pengguna/agent')" @save="router.push(`/admin/pengguna/agent/${agent?.id}/edit`)">
+    <!-- Foto Profil -->
+    <template #field-photo="{ data }">
+      <img :src="data.photo || '/default-avatar.png'" alt="Foto Agen"
+        class="w-24 h-24 rounded-full object-cover border" />
+    </template>
+
+
+  </DetailView>
 </template>
+
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
@@ -58,28 +57,32 @@ const formatStatus = (statusCode: string | undefined): string => {
 const formattedAgent = computed(() => {
   if (!agent.value) return {}
   return {
-    id: agent.value.id,
+    // id: agent.value.id, // HAPUS
     name: agent.value.full_name,
     photo: agent.value.photo_profile ?? '/default-avatar.png',
     email: agent.value.email,
     phone: agent.value.phone,
     username: agent.value.username,
     location: agent.value.location,
-    openHour: agent.value.open_time?.slice(0, 5), // ambil HH:MM
+    openHour: agent.value.open_time?.slice(0, 5),
     closeHour: agent.value.close_time?.slice(0, 5),
-    status: formatStatus(agent.value.status?.status)
+    status: formatStatus(agent.value.status?.status),
+    boundingbox: Array.isArray(agent.value.boundingbox)
+      ? agent.value.boundingbox.join(', ')
+      : '-' // Atau tampilkan array lain sesuai format
   }
 })
 
 // Fields configuration
 const fields = [
-  { key: 'id', label: 'ID Agen' },
   { key: 'name', label: 'Nama Lengkap' },
   { key: 'photo', label: 'Foto Profil' },
   { key: 'email', label: 'Email' },
   { key: 'phone', label: 'Nomor Telepon' },
   { key: 'username', label: 'Username' },
   { key: 'location', label: 'Lokasi' },
+  { key: 'latitude', label: 'Latitude' },       // Tampilkan ini
+  { key: 'longitude', label: 'Longitude' },     // Tampilkan ini
   { key: 'openHour', label: 'Jam Buka' },
   { key: 'closeHour', label: 'Jam Tutup' },
   { key: 'status', label: 'Status', type: 'status' }

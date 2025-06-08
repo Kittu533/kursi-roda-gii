@@ -109,11 +109,25 @@ export const useModelStore = defineStore('model', {
       }
     },
 
+    // store/model.ts
+
     async updateModel(id: string, data: Partial<CreateModelPayload>): Promise<void> {
       try {
         this.isLoading = true
         this.error = null
-        await updateModel(id, data)
+
+        // Buat payload hanya field yang memang ada nilainya (tidak undefined/null)
+        const payload: Record<string, any> = {}
+        for (const key in data) {
+          const value = data[key as keyof typeof data]
+          // Bisa tambahkan pengecualian jika field kosong tidak mau dikirim
+          if (value !== undefined && value !== null && value !== '') {
+            payload[key] = value
+          }
+        }
+        // Kirim payload (bisa 1, 2, atau semua field)
+        await updateModel(id, payload)
+
         if (this.selectedModel?.id === id) {
           await this.getModelDetail(id)
         }
@@ -144,4 +158,3 @@ export const useModelStore = defineStore('model', {
     }
   }
 })
- 

@@ -1,16 +1,19 @@
 export interface Voucher {
   id: string
   voucher_code: string
-  discount_percentage: string // bisa juga ubah jadi number jika ingin otomatis hitung diskon
-  start_date: string // ISO format: YYYY-MM-DD
-  end_date: string
+  discount_percentage: string // "10.00" (string, sesuai response)
+  max_discount: number
+  min_order_amount: number
+  start_date: string // ISO date string
+  end_date: string // ISO date string
   usage_limit: number
   used_count: number
   vouchers_status_id: string
-  voucher_status?: {
-    id: string
-    status: 'active' | 'inactive' | string
-  }
+  voucher_status: VoucherStatus
+}
+export interface VoucherStatus {
+  id: string
+  status: string // contoh: "active"
 }
 export interface VoucherApiSingleResponse {
   response: {

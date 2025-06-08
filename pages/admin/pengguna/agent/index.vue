@@ -94,12 +94,8 @@ const loadData = async () => {
 };
 
 const agents = computed<TableItem[]>(() =>
-  agentStore.agents.map((a, index) => ({
-    no:
-      index +
-      1 +
-      ((pagination.value?.currentPage || 1) - 1) *
-        (pagination.value?.itemsPerPage || 10),
+  agentStore.agents.map((a) => ({
+    id: a.id,
     name: a.full_name,
     photo: "*jpg", // atau a.photo_profile ?? '/default-avatar.png'
     location: a.location ?? "-",
@@ -131,7 +127,6 @@ const enhancedPagination = computed<TablePagination>(() => {
 
 const columns: TableHeader[] = [
   { key: "name", label: "Nama Lengkap" },
-  { key: "photo", label: "Foto Profil" },
   { key: "location", label: "Lokasi" },
   { key: "open_time", label: "Jam Buka" },
   { key: "close_time", label: "Jam Tutup" },

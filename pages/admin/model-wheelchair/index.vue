@@ -94,17 +94,17 @@ const enhancedPagination = computed<TablePagination>(() => {
 })
 
 const columns: TableHeader[] = [
-  { key: 'name', label: 'Name Model' },
+  { key: 'name', label: 'Model' },
   { key: 'stock', label: 'Stok' },
   { key: 'price', label: 'Harga (Rp)' },
   { key: 'maxWeight', label: 'Max Berat (Kg)' },
-  { key: 'batteryCapacity', label: 'Daya Baterai (mAh)' },
+  { key: 'batteryCapacity', label: 'Daya Baterai (jam)' },
   { key: 'status', label: 'Status Guide' },
   { key: 'actions', label: 'Aksi' }
 ]
 
 const exportColumns = computed<ExportColumn[]>(() => [
-  { key: 'name', header: 'Nama Model' },
+  { key: 'name', header: 'Model' },
   { key: 'stock', header: 'Stok' },
   { key: 'price', header: 'Harga' },
   { key: 'maxWeight', header: 'Max Berat' },

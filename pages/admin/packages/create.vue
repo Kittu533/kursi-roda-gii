@@ -149,7 +149,7 @@ const handleSubmit = async () => {
   try {
     isLoading.value = true
     await packageStore.createNewPackage({
-      name: formData.value.name,
+      name: formData.value.name,  
       picture: formData.value.picture,
       description: formData.value.description,
       price: formData.value.price,

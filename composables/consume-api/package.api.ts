@@ -29,7 +29,7 @@ export const createPackage = (payload: PackagePayload) => {
 }
 
 export const updatePackage = (id: string, payload: Partial<PackagePayload>) => {
-  return useApi(`/admin/packages/${id}`, {
+  return useApi(`/admin/packages/update/${id}`, {
     method: 'PATCH',
     body: payload,
     service: 'core'

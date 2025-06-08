@@ -90,12 +90,17 @@ const formatPercentage = (value: string | number): string => {
 
 const vouchers = computed<TableItem[]>(() =>
   voucherStore.vouchers.map((v: Voucher) => ({
-    idVoucher: v.id,
     kodeVoucher: v.voucher_code,
-    nilaiVoucher: formatCurrency(parseFloat(v.discount_percentage) * 100000), // bisa disesuaikan logika hitungnya
+    maksVoucher: formatCurrency(v.max_discount),
+    minVoucher: formatCurrency(v.min_order_amount),
     persenVoucher: formatPercentage(v.discount_percentage),
-    tanggalBerlaku: formatDate(v.start_date),
-    tanggalBerakhir: formatDate(v.end_date),
+    status:
+      v.voucher_status?.status === "active"
+        ? "Aktif"
+        : v.voucher_status?.status === "expired"
+          ? "Kadaluwarsa"
+          : "Tidak Aktif",
+    idVoucher: v.id, // tetap perlu untuk aksi
   }))
 )
 
@@ -111,12 +116,11 @@ const enhancedPagination = computed<TablePagination>(() => {
 
 // Table config
 const columns: TableHeader[] = [
-  { key: "idVoucher", label: "ID Voucher" },
   { key: "kodeVoucher", label: "Kode Voucher" },
-  { key: "nilaiVoucher", label: "Nilai Voucher" },
+  { key: "maksVoucher", label: "Maks. Penggunaan Voucher" },
+  { key: "minVoucher", label: "Min. Penggunaan Voucher" },
   { key: "persenVoucher", label: "Persen Voucher" },
-  { key: "tanggalBerlaku", label: "Tanggal Berlaku" },
-  { key: "tanggalBerakhir", label: "Tanggal Berakhir" },
+  { key: "status", label: "Status" },
   { key: "actions", label: "Aksi" },
 ]
 
