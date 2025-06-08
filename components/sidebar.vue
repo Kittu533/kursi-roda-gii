@@ -224,7 +224,7 @@ const navigation: NavigationGroup[] = [
   {
     title: "Laporan",
     items: [
-      { name: "Laporan", href: "/admin/laporan", NuxtIcon: "ic:baseline-description" },
+      { name: "Laporan", href: "/admin/report", NuxtIcon: "ic:baseline-description" },
     ],
   },
 ];
