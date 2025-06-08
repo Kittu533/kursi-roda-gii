@@ -1,25 +1,12 @@
 <template>
-  <DetailView
-    title="Wheelchair - Detail"
-    card-title="Data Produk"
-    :breadcrumbs="breadcrumbs"
-    :fields="fields"
-    :data="formattedWheelchair"
-    :loading="isLoading"
-    :error="error"
-    back-button-text="Kembali"
-    save-button-text="Edit"
-    @back="router.push('/admin/model-wheelchair')"
-    @save="router.push(`/admin/model-wheelchair/${wheelchair?.id}/edit`)"
-  >
+  <DetailView title="Kursi Roda - Detail" card-title="Data Produk" :breadcrumbs="breadcrumbs" :fields="fields"
+    :data="formattedWheelchair" :loading="isLoading" :error="error" back-button-text="Kembali" save-button-text="Edit"
+    @back="router.back()" @save="router.push(`/admin/model-wheelchair/${wheelchair?.id}/edit`)">
     <!-- Template Slot untuk Lihat Foto -->
     <template #field-photo="{ data }">
       <div v-if="data.photo">
-        <a
-          :href="data.photo"
-          target="_blank"
-          class="inline-flex items-center gap-1 px-2 py-1 border rounded text-sm hover:bg-gray-50"
-        >
+        <a :href="data.photo" target="_blank"
+          class="inline-flex items-center gap-1 px-2 py-1 border rounded text-sm hover:bg-gray-50">
           <Icon name="mdi:eye-outline" /> Lihat Foto
         </a>
       </div>
@@ -28,12 +15,9 @@
 
     <!-- Status Badge -->
     <template #field-status="{ data }">
-      <span
-        class="text-xs font-medium px-2 py-1 rounded-full"
-        :class="data.status === 'Tersedia'
-          ? 'bg-green-100 text-green-700'
-          : 'bg-gray-200 text-gray-800'"
-      >
+      <span class="text-xs font-medium px-2 py-1 rounded-full" :class="data.status === 'Tersedia'
+        ? 'bg-green-100 text-green-700'
+        : 'bg-gray-200 text-gray-800'">
         {{ data.status || '-' }}
       </span>
     </template>
@@ -56,19 +40,26 @@ const isLoading = computed(() => wheelchairStore.isLoading)
 const error = computed(() => wheelchairStore.error)
 
 const breadcrumbs = [
-  { text: 'Produk', to: '/admin/model-wheelchair' },
-  { text: 'Detail' }
+  { text: 'Model', to: '/admin/model-wheelchair' },
+  { text: wheelchair.value?.model?.model || 'Detail', to: `/admin/model-wheelchair/${route.params.id}` },
+  { text: 'Detail Produk', to: `/admin/model-wheelchair/${route.params.id}/product/${wheelchair.value?.id || ''}` }
 ]
 
 const fields = [
   { key: 'id', label: 'ID Produk' },
-  { key: 'agent_id', label: 'ID Agen' },
-  { key: 'photo', label: 'Foto Produk' },
+  { key: 'name', label: 'Nama Kursi Roda' },
   { key: 'serial_number', label: 'Nomor Seri' },
-  { key: 'product_name', label: 'Nama' },
-  { key: 'model_name', label: 'Model' },
+  { key: 'description', label: 'Deskripsi' },
   { key: 'status', label: 'Status', type: 'status' },
-  { key: 'maintenance_date', label: 'Tanggal Pemeliharaan' }
+  { key: 'last_maintenance_date', label: 'Tanggal Pemeliharaan Terakhir' },
+  { key: 'model_name', label: 'Model' },
+  { key: 'max_weight', label: 'Maks. Berat (kg)' },
+  { key: 'battery_capacity', label: 'Kapasitas Baterai (mAh)' },
+  { key: 'price', label: 'Harga', type: 'currency' },
+  { key: 'agent_name', label: 'Nama Agen' },
+  { key: 'agent_email', label: 'Email Agen' },
+  { key: 'agent_phone', label: 'Telepon Agen' },
+  { key: 'agent_location', label: 'Lokasi Agen' },
 ]
 
 const formattedWheelchair = computed(() => {
@@ -76,13 +67,19 @@ const formattedWheelchair = computed(() => {
 
   return {
     id: wheelchair.value.id,
-    agent_id: wheelchair.value.agent?.id || '-',
-    photo: wheelchair.value.model?.picture || null,
+    name: wheelchair.value.name || '-',
     serial_number: wheelchair.value.serial_number || '-',
-    product_name: wheelchair.value.model?.name || '-',
-    model_name: wheelchair.value.model?.model || '-',
+    description: wheelchair.value.description || '-',
     status: formatStatus(wheelchair.value.wheelchair_status?.status),
-    maintenance_date: formatMaintenanceDate()
+    last_maintenance_date: wheelchair.value.last_maintenance_date || '-',
+    model_name: wheelchair.value.model?.model || '-',
+    max_weight: wheelchair.value.model?.max_weight ?? '-',
+    battery_capacity: wheelchair.value.model?.battery_capacity ?? '-',
+    price: wheelchair.value.model?.price ?? '-',
+    agent_name: wheelchair.value.agent?.full_name || '-',
+    agent_email: wheelchair.value.agent?.email || '-',
+    agent_phone: wheelchair.value.agent?.phone || '-',
+    agent_location: wheelchair.value.agent?.location || '-',
   }
 })
 

@@ -39,6 +39,8 @@ export const updateVoucher = async (id: string, payload: Partial<CreateVoucherPa
   })
 }
 
+
+
 export const deleteVoucher = async (id: string) => {
   return await useApi(`${BASE_URL}/${id}`, {
     method: 'DELETE',

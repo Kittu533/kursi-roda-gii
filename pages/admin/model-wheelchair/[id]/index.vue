@@ -54,8 +54,7 @@ const breadcrumbs = [
 // Menyesuaikan dengan struktur data model yang ada
 const fields = [
   { key: 'id', label: 'ID Model' },
-  { key: 'name', label: 'Nama Model' },
-  { key: 'model', label: 'Kode Model' },
+  { key: 'model', label: 'Model' },
   { key: 'picture', label: 'Foto', type: 'image' },
   { key: 'stock', label: 'Stok Tersedia' },
   { key: 'price', label: 'Harga', type: 'currency' },
@@ -141,7 +140,7 @@ const handleAction = ({ type, row }: { type: string; row: Wheelchair }) => {
       router.push(`/admin/model-wheelchair/${modelId.value}/product/${row.id}`)
       break
     case 'edit':
-      router.push(`/  admin/model-wheelchair/${modelId.value}/product/${row.id}/edit`)
+      router.push(`/admin/model-wheelchair/${modelId.value}/product/${row.id}/edit`)
       break
     case 'delete':
       selectedWheelchair.value = row

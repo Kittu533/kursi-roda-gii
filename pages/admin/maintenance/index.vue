@@ -60,9 +60,7 @@ const maintenances = computed<TableItem[]>(() =>
 
     return {
       id: m.id,
-      model: m.wheelchair.model_id,
       serialNumber: m.wheelchair.serial_number,
-      // picture: m.picture || '',
       description: m.issue_description || '',
       startDate: new Date(m.start_date).toLocaleDateString("id-ID"),
       endDate: m.end_date ? new Date(m.end_date).toLocaleDateString("id-ID") : '-',
@@ -94,18 +92,8 @@ const enhancedPagination = computed<TablePagination>(() => {
 });
 
 const columns: TableHeader[] = [
-  { key: 'id', label: 'ID Pemeliharaan' },
-  { key: 'model', label: 'Model' },
+
   { key: 'serialNumber', label: 'Nomor Seri' },
-  {
-    key: 'picture',
-    label: 'Foto',
-    render: () => ({
-      component: 'span',
-      text: '.jpg',
-      class: 'text-gray-700 font-mono',
-    }),
-  },
   { key: 'description', label: 'Deskripsi' },
   { key: 'startDate', label: 'Tanggal Pemeliharaan' },
   { key: 'endDate', label: 'Tanggal Selesai Pemeliharaan' },

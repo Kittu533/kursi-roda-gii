@@ -17,11 +17,6 @@
         <!-- Form -->
         <div class="bg-white rounded-md p-4 space-y-4">
             <div>
-                <label class="text-sm block mb-1">Nama Model <span class="text-red-500">*</span></label>
-                <input v-model="formData.name" type="text" class="form-input" required />
-            </div>
-
-            <div>
                 <label class="text-sm block mb-1">Model <span class="text-red-500">*</span></label>
                 <input v-model="formData.model" type="text" class="form-input" required />
             </div>
@@ -31,12 +26,9 @@
                 <label class="text-sm block mb-1">Gambar <span class="text-red-500">*</span></label>
                 <input type="file" accept="image/png, image/jpeg" @change="onFileChange" class="form-input" required />
                 <div v-if="formData.picture" class="mt-2">
-                    <img :src="formData.picture" alt="Preview Gambar" class="h-24 rounded shadow border" />
-                    <div>
-                        <a :href="formData.picture" target="_blank" class="text-blue-600 hover:underline text-xs">
-                            Lihat gambar
-                        </a>
-                    </div>
+                    <a :href="formData.picture" target="_blank" class="text-blue-600 hover:underline text-xs">
+                        Lihat gambar
+                    </a>
                 </div>
             </div>
 
@@ -60,7 +52,7 @@
             </div>
 
             <div>
-                <label class="text-sm block mb-1">Kapasitas Baterai (mAh) <span class="text-red-500">*</span></label>
+                <label class="text-sm block mb-1">Kapasitas Baterai (jam) <span class="text-red-500">*</span></label>
                 <input v-model.number="formData.battery_capacity" type="number" class="form-input" min="0" required />
             </div>
 
@@ -99,7 +91,6 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 const formData = ref({
-    name: '',
     model: '',
     picture: '', // ini akan diisi URL hasil upload
     stock: 0,
@@ -127,7 +118,7 @@ async function onFileChange(event: Event) {
 
 const validateForm = () => {
     const f = formData.value
-    if (!f.name || !f.model || !f.picture || f.guide_compatible === '')
+    if (!f.model || !f.picture || f.guide_compatible === '')
         return (errorMessage.value = 'Semua kolom wajib diisi'), false
     return true
 }
@@ -139,7 +130,6 @@ const handleSubmit = async () => {
     try {
         isLoading.value = true
         await modelStore.createNewModel({
-            name: formData.value.name,
             model: formData.value.model,
             picture: formData.value.picture,
             stock: formData.value.stock,

@@ -17,10 +17,10 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxtjs/seo',
     'shadcn-nuxt',
-
+    '@nuxtjs/leaflet'
   ],
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', 'leaflet/dist/leaflet.css'],
   app: {
     head: {
       title: 'Wheelchair Rental App',
