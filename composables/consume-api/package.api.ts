@@ -37,7 +37,7 @@ export const updatePackage = (id: string, payload: Partial<PackagePayload>) => {
 }
 
 export const deletePackage = (id: string) => {
-  return useApi(`/admin/packages/${id}/soft_delete`, {
+  return useApi(`/admin/packages/delete/${id}`, {
     method: 'PATCH',
     service: 'core'
   })

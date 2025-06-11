@@ -1,33 +1,48 @@
+export interface Agent {
+  id: string
+  full_name: string
+  email: string
+  phone: string
+  location: string
+}
+
 export interface Report {
-    id: string;
-    agentId: string;
-    reportDate: string;
-    totalPendapatan: number;
-    totalPengembalian: number;
-    totalTransaksi: number;
-    totalTersedia: number;
-    totalTersewa: number;
-    totalKerusakan: number;
-    jumlahPerawatan: number;
-    pembayaranMenunggu: number;
-    catatanTambahan: string;
-    tanggalDibuat: string;
-    terakhirDiperbarui: string;
-    status: 'berhasil' | 'rusak' | 'menunggu';
+  id: string
+  agent_id: string
+  report_date: string
+  created_at: string
+  updated_at: string
+  agent: Agent
+}
+
+export interface ReportListResponse {
+  response: {
+    page: {
+      total_record_count: number
+      batch_number: number
+      batch_size: number
+      max_batch_size: number
+    }
+    records: Report[]
   }
-  
-  export interface ReportFilter {
-    page: number;
-    limit: number;
-    status?: string;
-    startDate?: string;
-    endDate?: string;
-    search?: string;
+  metaData: {
+    message: string
+    code: number
+    response_code: string
   }
-  
-  export interface Pagination {
-    currentPage: number;
-    totalPages: number;
-    total: number;
-    itemsPerPage: number;
+}
+
+export interface ReportSingleResponse {
+  response: Report
+  metaData: {
+    message: string
+    code: number
+    response_code: string
   }
+}
+
+export interface CreateReportPayload {
+  agent_id: string
+  report_date: string
+  // tambahkan field lain jika ada
+}

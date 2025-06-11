@@ -3,11 +3,6 @@
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold tracking-tight">Data Maintenance</h2>
         <div class="flex items-center gap-2">
-          <NuxtLink to="/admin/maintenance/create"
-            class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50">
-            <span>Tambah Maintenance</span>
-            <Plus class="w-4 h-4" />
-          </NuxtLink>
           <ExportDropdown :data="exportData" :columns="exportColumns" title="Data Maintenance" filename="maintenance" />
           <button class="bg-white border px-4 py-2 rounded-md flex items-center gap-2 hover:bg-gray-50"
             @click="showFilter = !showFilter">

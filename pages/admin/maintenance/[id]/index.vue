@@ -37,14 +37,18 @@ const breadcrumbs = [
 
 // Fields configuration (langsung akses key tanpa value)
 const fields = [
-  { key: 'id', label: 'ID Maintenance' }, // Mengakses ID Maintenance langsung
-  { key: 'wheelchair.model_id', label: 'Model Kursi Roda' }, // Mengakses model kursi roda dari wheelchairData
-  { key: 'wheelchair.serial_number', label: 'Nomor Seri' }, // Mengakses nomor seri kursi roda
-  { key: 'picture', label: 'Foto' }, // Mengakses foto kursi roda
-  { key: 'issue_description', label: 'Deskripsi' }, // Deskripsi perbaikan
-  { key: 'start_date', label: 'Tanggal Pemeliharaan' }, // Tanggal pemeliharaan
-  { key: 'end_date', label: 'Tanggal Selesai Pemeliharaan' }, // Tanggal selesai
-  { key: 'maintenance_status.status', label: 'Status' }, // Status pemeliharaan
+  { key: 'id', label: 'ID Maintenance' },
+  { key: 'wheelchair.model_id', label: 'Model Kursi Roda' },
+  { key: 'wheelchair.serial_number', label: 'Nomor Seri' },
+  { key: 'picture', label: 'Foto' },
+  { key: 'issue_description', label: 'Deskripsi' },
+  { key: 'start_date', label: 'Tanggal Pemeliharaan' },
+  { 
+    key: 'end_date', 
+    label: 'Tanggal Selesai Pemeliharaan',
+    format: (value) => value || 'Sedang dalam pemeliharaan'
+  },
+  { key: 'maintenance_status.status', label: 'Status' },
 ];
 
 const loaded = ref(false);

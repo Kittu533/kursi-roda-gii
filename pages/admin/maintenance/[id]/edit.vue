@@ -9,11 +9,7 @@
         <input v-model="formData.id" type="text" class="form-input" readonly />
       </div>
 
-      <!-- Model Kursi Roda -->
-      <div>
-        <label class="block text-sm font-medium">Model Kursi Roda</label>
-        <input v-model="formData.model" type="text" class="form-input" readonly />
-      </div>
+
 
       <!-- Nomor Seri -->
       <div>
@@ -24,8 +20,16 @@
       <!-- Foto -->
       <div>
         <label class="block text-sm font-medium">URL Foto</label>
-        <input v-model="formData.picture" type="url" class="form-input" required />
+        <div class="flex items-center gap-3">
+          <input v-model="formData.picture" type="url" class="form-input" required />
+          <a v-if="formData.picture" :href="formData.picture" target="_blank" class="text-blue-500 underline">Lihat
+            Foto</a>
+        </div>
+        <div v-if="formData.picture" class="mt-2">
+          <img :src="formData.picture" alt="Foto Maintenance" class="max-h-32 rounded border" />
+        </div>
       </div>
+
 
       <!-- Deskripsi -->
       <div>
@@ -91,7 +95,6 @@ onMounted(async () => {
   if (maintenance) {
     formData.value = {
       id: maintenance.id,
-      model: maintenance.wheelchair.model_id,
       serialNumber: maintenance.wheelchair.serial_number,
       picture: maintenance.picture,
       description: maintenance.issue_description,

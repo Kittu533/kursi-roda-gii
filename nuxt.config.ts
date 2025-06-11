@@ -6,7 +6,8 @@ export default defineNuxtConfig({
       coreServiceBaseUrl: process.env.NUXT_PUBLIC_CORE_SERVICE_BASE_URL,
       masterdataServiceBaseUrl: process.env.NUXT_PUBLIC_MASTERDATA_SERVICE_BASE_URL,
       authenticationServiceBaseUrl: process.env.NUXT_PUBLIC_AUTHENTICATION_SERVICE_BASE_URL,
-      fileServiceBaseUrl: process.env.NUXT_PUBLIC_FILE_SERVICE_BASE_URL
+      fileServiceBaseUrl: process.env.NUXT_PUBLIC_FILE_SERVICE_BASE_URL,
+      bookingServiceBaseUrl: process.env.NUXT_PUBLIC_BOOKING_SERVICE_BASE_URL
     }
   },
   modules: [
