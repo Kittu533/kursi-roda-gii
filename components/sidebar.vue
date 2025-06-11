@@ -1,32 +1,24 @@
 <template>
   <!-- Overlay untuk mobile -->
-  <div
-    v-if="isMounted && isMobileView && isOpen"
-    class="fixed inset-0 z-30 bg-black/50 md:hidden"
-    @click="$emit('toggle')"
-  ></div>
+  <div v-if="isMounted && isMobileView && isOpen" class="fixed inset-0 z-30 bg-black/50 md:hidden"
+    @click="$emit('toggle')"></div>
 
-  <div
-    class="sidebar bg-white border-r text-card-foreground transition-all duration-300 h-screen z-40 flex flex-col"
+  <div class="sidebar bg-white border-r text-card-foreground transition-all duration-300 h-screen z-40 flex flex-col"
     :class="[
       isTabletOrLarger ? (isOpen ? 'w-64' : 'w-16') : 'w-64',
       isTabletOrLarger ? 'relative' : 'fixed',
       !isTabletOrLarger && !isOpen ? '-translate-x-full' : 'translate-x-0',
-    ]"
-  >
+    ]">
     <!-- Logo -->
     <div class="flex h-16 items-center border-b px-4 shrink-0">
       <div class="flex items-center gap-2">
         <div class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-white shrink-0">
           <NuxtImg src="/logo-monitoring.webp" class="w-8 h-8" alt="Logo" />
         </div>
-        <span
-          class="font-semibold transition-opacity duration-200 whitespace-nowrap"
-          :class="{
-            'opacity-0 w-0 overflow-hidden': !isOpen,
-            'opacity-100': isOpen,
-          }"
-        >
+        <span class="font-semibold transition-opacity duration-200 whitespace-nowrap" :class="{
+          'opacity-0 w-0 overflow-hidden': !isOpen,
+          'opacity-100': isOpen,
+        }">
           Wheel Care
         </span>
       </div>
@@ -42,25 +34,15 @@
               {{ group.title }}
             </h2>
             <div>
-              <router-link
-                v-for="item in group.items"
-                :key="item.name"
-                :to="item.href"
-                class="group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                :class="[
+              <router-link v-for="item in group.items" :key="item.name" :to="item.href"
+                class="group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors" :class="[
                   isRouteActive(item.href)
                     ? 'bg-accent text-accent-foreground font-semibold'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                   !isOpen ? 'justify-center' : '',
-                ]"
-                @click="isMobileView && $emit('toggle')"
-              >
-                <NuxtIcon
-                  :name="item.NuxtIcon"
-                  :class="{ 'mr-3': isOpen }"
-                  v-if="item.NuxtIcon"
-                  class="h-5 w-5 flex-shrink-0"
-                />
+                ]" @click="isMobileView && $emit('toggle')">
+                <NuxtIcon :name="item.NuxtIcon" :class="{ 'mr-3': isOpen }" v-if="item.NuxtIcon"
+                  class="h-5 w-5 flex-shrink-0" />
                 <span v-if="isOpen" class="truncate transition-opacity whitespace-nowrap">
                   {{ item.name }}
                 </span>
@@ -70,35 +52,25 @@
           </template>
           <!-- Kategori lain dengan dropdown -->
           <template v-else>
-            <button
-              @click="toggleDropdown(idx)"
+            <button @click="toggleDropdown(idx)"
               class="flex items-center w-full px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 hover:bg-gray-100 rounded transition"
-              :class="isOpenDropdown[idx] ? 'bg-gray-100' : ''"
-              v-if="isOpen"
-            >
+              :class="isOpenDropdown[idx] ? 'bg-gray-100' : ''" v-if="isOpen">
               <span>{{ group.title }}</span>
-              <Icon :name="isOpenDropdown[idx] ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="ml-auto h-4 w-4" />
+              <!-- GANTI Icon dengan NuxtIcon -->
+              <NuxtIcon :name="isOpenDropdown[idx] ? 'heroicons:chevron-up' : 'heroicons:chevron-down'"
+                class="ml-auto h-4 w-4" />
             </button>
+
             <div v-show="isOpenDropdown[idx] || !isOpen" class="space-y-1">
-              <router-link
-                v-for="item in group.items"
-                :key="item.name"
-                :to="item.href"
-                class="group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                :class="[
+              <router-link v-for="item in group.items" :key="item.name" :to="item.href"
+                class="group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors" :class="[
                   isRouteActive(item.href)
                     ? 'bg-accent text-accent-foreground font-semibold'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                   !isOpen ? 'justify-center' : '',
-                ]"
-                @click="isMobileView && $emit('toggle')"
-              >
-                <NuxtIcon
-                  :name="item.NuxtIcon"
-                  :class="{ 'mr-3': isOpen }"
-                  v-if="item.NuxtIcon"
-                  class="h-5 w-5 flex-shrink-0"
-                />
+                ]" @click="isMobileView && $emit('toggle')">
+                <NuxtIcon :name="item.NuxtIcon" :class="{ 'mr-3': isOpen }" v-if="item.NuxtIcon"
+                  class="h-5 w-5 flex-shrink-0" />
                 <span v-if="isOpen" class="truncate transition-opacity whitespace-nowrap">
                   {{ item.name }}
                 </span>
@@ -112,11 +84,9 @@
 
     <!-- Collapse button -->
     <div v-if="showToggle && isTabletOrLarger" class="border-t py-3 px-4 w-full bg-white shrink-0">
-      <button
-        @click="$emit('toggle')"
+      <button @click="$emit('toggle')"
         class="flex items-center justify-center w-full rounded-md py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-        :class="{ 'justify-center': !isOpen }"
-      >
+        :class="{ 'justify-center': !isOpen }">
         <Icon :name="isOpen ? 'heroicons:chevron-left' : 'heroicons:chevron-right'" class="h-5 w-5" />
         <span v-if="isOpen" class="ml-2 transition-opacity">Collapse</span>
       </button>
@@ -243,11 +213,13 @@ function toggleDropdown(idx: number) {
 .sidebar {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
+
 .sidebar * {
   transition-property: width, opacity, margin, padding, transform;
   transition-duration: 300ms;
   transition-timing-function: ease-in-out;
 }
+
 @supports (-webkit-touch-callout: none) {
   .h-screen {
     height: -webkit-fill-available;
